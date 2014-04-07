@@ -6,6 +6,7 @@
 
 		IPotentialFile CommonBuildTransform { get; }
 		IPotentialFile CommonPublishTransform { get; }
+		IPotentialFile Identity { get; }
 		IPotentialFile Source { get; }
 
 		#endregion

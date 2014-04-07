@@ -26,7 +26,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Properties
 
-		protected internal virtual IFileSystem FileSystem
+		public virtual IFileSystem FileSystem
 		{
 			get { return this._fileSystem; }
 		}

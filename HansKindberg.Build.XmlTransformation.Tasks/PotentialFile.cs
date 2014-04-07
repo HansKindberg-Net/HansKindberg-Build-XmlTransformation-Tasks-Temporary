@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Build.Framework;
 
@@ -12,7 +11,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		private readonly FileInfoBase _fileInfo;
 		private readonly string _originalPath;
-		private readonly string _originalPathPathWithoutExtension;
 
 		#endregion
 
@@ -37,7 +35,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				throw new ArgumentNullException("fileSystem");
 
 			this._originalPath = useFileName ? fileName : taskItem.ItemSpec;
-			this._originalPathPathWithoutExtension = Path.GetFileNameWithoutExtension(this._originalPath);
 
 			try
 			{
@@ -86,11 +83,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		public virtual string OriginalPath
 		{
 			get { return this._originalPath; }
-		}
-
-		public virtual string OriginalPathWithoutExtension
-		{
-			get { return this._originalPathPathWithoutExtension; }
 		}
 
 		#endregion

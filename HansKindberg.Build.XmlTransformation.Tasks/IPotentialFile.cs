@@ -10,7 +10,6 @@
 		bool IsFile { get; }
 		string Name { get; }
 		string OriginalPath { get; }
-		string OriginalPathWithoutExtension { get; }
 
 		#endregion
 	}

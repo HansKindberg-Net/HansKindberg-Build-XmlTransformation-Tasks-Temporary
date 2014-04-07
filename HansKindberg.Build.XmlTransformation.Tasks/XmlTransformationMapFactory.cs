@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
@@ -34,29 +36,64 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
-		public virtual IXmlTransformationMap Create(ITaskItem xmlTransformationMapTaskItem)
+		public virtual IXmlTransformationMap Create(ITaskItem xmlTransformationMapTaskItem, IValidationLog validationLog)
 		{
 			if(xmlTransformationMapTaskItem == null)
 				throw new ArgumentNullException("xmlTransformationMapTaskItem");
 
-			var xmlTransformationMap = new XmlTransformationMap();
+			if(validationLog == null)
+				throw new ArgumentNullException("validationLog");
+
+			var xmlTransformationMap = new XmlTransformationMap
+			{
+				Identity = this.PotentialFileFactory.Create(xmlTransformationMapTaskItem)
+			};
+
+			if(!xmlTransformationMap.Identity.Exists)
+				this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
 
 			var commonBuildTransform = xmlTransformationMapTaskItem.GetMetadata("CommonBuildTransform");
 
 			if(commonBuildTransform != null)
+			{
 				xmlTransformationMap.CommonBuildTransform = this.PotentialFileFactory.Create(commonBuildTransform);
+
+				if(!xmlTransformationMap.CommonBuildTransform.Exists)
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonBuildTransform\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+			}
 
 			var commonPublishTransform = xmlTransformationMapTaskItem.GetMetadata("CommonPublishTransform");
 
 			if(commonPublishTransform != null)
+			{
 				xmlTransformationMap.CommonPublishTransform = this.PotentialFileFactory.Create(commonPublishTransform);
+
+				if(!xmlTransformationMap.CommonPublishTransform.Exists)
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonPublishTransform\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+			}
 
 			var source = xmlTransformationMapTaskItem.GetMetadata("Source");
 
 			if(source != null)
+			{
 				xmlTransformationMap.Source = this.PotentialFileFactory.Create(source);
 
+				if(!xmlTransformationMap.Source.Exists)
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"Source\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+			}
+
 			return xmlTransformationMap;
+		}
+
+		protected internal virtual void LogWarning(string information, IXmlTransformationMap xmlTransformationMap, IValidationLog validationLog)
+		{
+			if(xmlTransformationMap == null)
+				throw new ArgumentNullException("xmlTransformationMap");
+
+			if(validationLog == null)
+				throw new ArgumentNullException("validationLog");
+
+			validationLog.LogWarning(information + string.Format(CultureInfo.InvariantCulture, " See the \"XmlTransformationMap\"-itemgroup with identity \"{0}\".", xmlTransformationMap.Identity.OriginalPath));
 		}
 
 		#endregion

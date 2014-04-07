@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.IO.Abstractions;
 using System.Linq;
+using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -13,14 +12,13 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Fields
 
-		private readonly IList<ValidationInformation> _executionResult = new List<ValidationInformation>();
-		private readonly IFileSystem _fileSystem;
 		private ITaskItem[] _files;
 		private ITaskItem[] _filesToTransform;
 		private string _transformName;
-		private ValidationMode _validationMode = Tasks.ValidationMode.Warning;
+		private readonly IValidationLog _validationLog = new ValidationLog();
+		private ValidationMode _validationMode = Validation.ValidationMode.Warning;
 		private ITaskItem[] _xmlFileExtensions;
-		private XmlTransformMode _xmlTransformMode = Tasks.XmlTransformMode.Build;
+		private readonly IXmlTransformFactory _xmlTransformFactory;
 		private readonly IXmlTransformationMapFactory _xmlTransformationMapFactory;
 		private ITaskItem[] _xmlTransformationMaps;
 
@@ -28,31 +26,21 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Constructors
 
-		protected CollectXmlTransformation(IFileSystem fileSystem, IXmlTransformationMapFactory xmlTransformationMapFactory)
+		protected CollectXmlTransformation(IXmlTransformFactory xmlTransformFactory, IXmlTransformationMapFactory xmlTransformationMapFactory)
 		{
-			if(fileSystem == null)
-				throw new ArgumentNullException("fileSystem");
+			if(xmlTransformFactory == null)
+				throw new ArgumentNullException("xmlTransformFactory");
 
 			if(xmlTransformationMapFactory == null)
 				throw new ArgumentNullException("xmlTransformationMapFactory");
 
-			this._fileSystem = fileSystem;
 			this._xmlTransformationMapFactory = xmlTransformationMapFactory;
+			this._xmlTransformFactory = xmlTransformFactory;
 		}
 
 		#endregion
 
 		#region Properties
-
-		protected internal virtual IList<ValidationInformation> ExecutionResult
-		{
-			get { return this._executionResult; }
-		}
-
-		protected internal virtual IFileSystem FileSystem
-		{
-			get { return this._fileSystem; }
-		}
 
 		[Required]
 		public virtual ITaskItem[] Files
@@ -75,6 +63,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			set { this._transformName = value; }
 		}
 
+		protected internal virtual IValidationLog ValidationLog
+		{
+			get { return this._validationLog; }
+		}
+
 		public virtual string ValidationMode
 		{
 			get { return this.ValidationModeInternal.ToString(); }
@@ -94,17 +87,12 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			set { this._xmlFileExtensions = value; }
 		}
 
-		public virtual string XmlTransformMode
+		protected internal virtual IXmlTransformFactory XmlTransformFactory
 		{
-			get { return this.XmlTransformModeInternal.ToString(); }
-			set { this.XmlTransformModeInternal = (XmlTransformMode) Enum.Parse(typeof(XmlTransformMode), value, true); }
+			get { return this._xmlTransformFactory; }
 		}
 
-		protected internal virtual XmlTransformMode XmlTransformModeInternal
-		{
-			get { return this._xmlTransformMode; }
-			set { this._xmlTransformMode = value; }
-		}
+		protected internal abstract XmlTransformMode XmlTransformMode { get; }
 
 		protected internal virtual IXmlTransformationMapFactory XmlTransformationMapFactory
 		{
@@ -121,56 +109,46 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
-		protected internal virtual void AddError(string information)
-		{
-			this.ExecutionResult.Add(new ValidationInformation
-			{
-				ValidationMode = this.ValidationModeInternal,
-				Information = information
-			});
-		}
-
-		protected internal virtual void AddWarning(string information)
-		{
-			var validationMode = this.ValidationModeInternal == Tasks.ValidationMode.Message ? Tasks.ValidationMode.Message : Tasks.ValidationMode.Warning;
-
-			this.ExecutionResult.Add(new ValidationInformation
-			{
-				ValidationMode = validationMode,
-				Information = information
-			});
-		}
-
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		public override bool Execute()
 		{
 			try
 			{
-				//this.FilesToTransform = this.GetFilesToTransform(this.Files).ToArray();
-
-				foreach(var validationInformation in this.ExecutionResult)
+				var xmlTransformationMapList = new List<IXmlTransformationMap>();
+				// ReSharper disable LoopCanBeConvertedToQuery
+				foreach(var xmlTransformationMap in this.XmlTransformationMaps)
 				{
-					switch(validationInformation.ValidationMode)
-					{
-						case Tasks.ValidationMode.Error:
-						{
-							this.Log.LogError(validationInformation.Information);
-							break;
-						}
-						case Tasks.ValidationMode.Warning:
-						{
-							this.Log.LogWarning(validationInformation.Information);
-							break;
-						}
-						default:
-						{
-							this.Log.LogMessage(validationInformation.Information);
-							break;
-						}
-					}
+					xmlTransformationMapList.Add(this.XmlTransformationMapFactory.Create(xmlTransformationMap, this.ValidationLog));
 				}
+				// ReSharper restore LoopCanBeConvertedToQuery
 
-				return this.ExecutionResult.All(validationInformation => validationInformation.ValidationMode != Tasks.ValidationMode.Error);
+				var xmlFiles = this.GetXmlFiles(this.Files).ToArray();
+
+				var xmlFilesToTransform = new List<IXmlFileToTransform>();
+				// ReSharper disable LoopCanBeConvertedToQuery
+				foreach(var file in xmlFiles)
+				{
+					xmlFilesToTransform.Add(this.XmlTransformFactory.Create(file, this.TransformName, this.XmlTransformMode, xmlTransformationMapList.ToArray(), this.ValidationLog));
+				}
+				// ReSharper restore LoopCanBeConvertedToQuery
+
+				var filesToTransform = new List<ITaskItem>();
+				//foreach(var xmlFile in xmlFiles)
+				//{
+				//	var xmlFileToTransform = xmlFilesToTransform.FirstOrDefault(x => xmlFile.ItemSpec.Equals(x.XmlFile.OriginalPath, StringComparison.OrdinalIgnoreCase));
+
+				//	if(xmlFileToTransform != null)
+				//	{
+				//		xmlFile.SetMetadata("IsAppConfig", xmlFileToTransform.IsAppConfig.ToString());
+				//		xmlFile.SetMetadata("", xmlFileToTransform.);
+				//	}
+				//}
+
+				this.FilesToTransform = filesToTransform.ToArray();
+
+				this.TransferValidationLog();
+
+				return this.ValidationLog.ValidationMessages.All(validationMessage => !(validationMessage is ValidationError));
 			}
 			catch(Exception exception)
 			{
@@ -180,34 +158,58 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			}
 		}
 
-		//protected internal virtual IEnumerable<ITaskItem> GetFilesToTransform(IEnumerable<ITaskItem> files)
-		//{
-		//	var filesToTransform = new List<ITaskItem>();
-		//	var xmlFiles = this.GetXmlFiles(files);
-		//	return null;
-		//}
-		protected internal virtual IDictionary<ITaskItem, FileInfoBase> GetXmlFiles(IEnumerable<ITaskItem> files)
+		protected internal virtual IEnumerable<ITaskItem> GetXmlFiles(IEnumerable<ITaskItem> files)
 		{
 			if(files == null)
 				throw new ArgumentNullException("files");
 
-			var xmlFiles = new Dictionary<ITaskItem, FileInfoBase>();
+			var xmlFiles = new List<ITaskItem>();
 
+			// ReSharper disable LoopCanBeConvertedToQuery
 			foreach(var file in files)
 			{
-				var fileInfo = this.FileSystem.FileInfo.FromFileName(file.ItemSpec);
+				var extension = file.GetMetadata("Extension");
 
-				if(!fileInfo.Exists)
-				{
-					this.AddWarning(string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" does not exist.", file.ItemSpec));
-					continue;
-				}
-
-				if(this.XmlFileExtensions.Select(xmlFileExtension => xmlFileExtension.ItemSpec).Contains(fileInfo.Extension, StringComparer.OrdinalIgnoreCase))
-					xmlFiles.Add(file, fileInfo);
+				if(extension != null && this.XmlFileExtensions.Select(xmlFileExtension => xmlFileExtension.ItemSpec).Contains(extension, StringComparer.OrdinalIgnoreCase))
+					xmlFiles.Add(file);
 			}
+			// ReSharper restore LoopCanBeConvertedToQuery
 
 			return xmlFiles;
+		}
+
+		protected internal virtual void LogValidationMessage(ValidationMessage validationMessage)
+		{
+			if(validationMessage == null)
+				throw new ArgumentNullException("validationMessage");
+
+			if(this.ValidationModeInternal == Validation.ValidationMode.Message)
+			{
+				this.Log.LogMessage(validationMessage.Information);
+				return;
+			}
+
+			if(this.ValidationModeInternal == Validation.ValidationMode.Warning)
+			{
+				this.Log.LogWarning(validationMessage.Information);
+				return;
+			}
+
+			if(validationMessage is ValidationError)
+			{
+				this.Log.LogError(validationMessage.Information);
+				return;
+			}
+
+			this.Log.LogWarning(validationMessage.Information);
+		}
+
+		protected internal virtual void TransferValidationLog()
+		{
+			foreach(var validationMessage in this.ValidationLog.ValidationMessages)
+			{
+				this.LogValidationMessage(validationMessage);
+			}
 		}
 
 		#endregion

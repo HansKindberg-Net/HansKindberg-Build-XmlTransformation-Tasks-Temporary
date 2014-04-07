@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO.Abstractions;
-using HansKindberg.Build.XmlTransformation.Tasks.IoC;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+﻿using HansKindberg.Build.XmlTransformation.Tasks.IoC;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -10,22 +6,15 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Constructors
 
-		public CollectBuildTransformation() : base(ServiceLocator.Instance.GetService<IFileSystem>(), ServiceLocator.Instance.GetService<IXmlTransformationMapFactory>()) {}
+		public CollectBuildTransformation() : base(ServiceLocator.Instance.GetService<IXmlTransformFactory>(), ServiceLocator.Instance.GetService<IXmlTransformationMapFactory>()) {}
 
 		#endregion
 
-		#region Methods
+		#region Properties
 
-		public override bool Execute()
+		protected internal override XmlTransformMode XmlTransformMode
 		{
-			var filesToTransform = new List<ITaskItem>();
-			filesToTransform.Add(new TaskItem("First"));
-			filesToTransform.Add(new TaskItem("Second"));
-			filesToTransform.Add(new TaskItem("Third"));
-			this.FilesToTransform = filesToTransform.ToArray();
-
-			this.Log.LogMessageFromText("----------- CollectBuildTransformation", MessageImportance.High);
-			return true;
+			get { return Tasks.XmlTransformMode.Build; }
 		}
 
 		#endregion

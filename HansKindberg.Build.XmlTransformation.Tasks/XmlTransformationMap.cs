@@ -6,6 +6,7 @@
 
 		public virtual IPotentialFile CommonBuildTransform { get; set; }
 		public virtual IPotentialFile CommonPublishTransform { get; set; }
+		public virtual IPotentialFile Identity { get; set; }
 		public virtual IPotentialFile Source { get; set; }
 
 		#endregion

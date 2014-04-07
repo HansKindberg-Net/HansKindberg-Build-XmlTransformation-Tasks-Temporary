@@ -11,6 +11,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 
 		private readonly IFileSystem _fileSystem;
 		private IPotentialFileFactory _potentialFileFactory;
+		private IXmlTransformFactory _xmlTransformFactory;
 		private IXmlTransformationMapFactory _xmlTransformationMapFactory;
 
 		#endregion
@@ -36,6 +37,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._potentialFileFactory ?? (this._potentialFileFactory = new PotentialFileFactory(this.FileSystem)); }
 		}
 
+		protected internal virtual IXmlTransformFactory XmlTransformFactory
+		{
+			get { return this._xmlTransformFactory ?? (this._xmlTransformFactory = new XmlTransformFactory(this.PotentialFileFactory)); }
+		}
+
 		protected internal virtual IXmlTransformationMapFactory XmlTransformationMapFactory
 		{
 			get { return this._xmlTransformationMapFactory ?? (this._xmlTransformationMapFactory = new XmlTransformationMapFactory(this.PotentialFileFactory)); }
@@ -58,6 +64,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 
 			if(serviceType == typeof(IXmlTransformationMapFactory))
 				return this.XmlTransformationMapFactory;
+
+			if(serviceType == typeof(IXmlTransformFactory))
+				return this.XmlTransformFactory;
 
 			return Activator.CreateInstance(serviceType);
 		}

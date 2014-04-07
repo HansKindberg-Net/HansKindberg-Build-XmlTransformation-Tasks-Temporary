@@ -1,6 +1,4 @@
-﻿using System.IO.Abstractions;
-using HansKindberg.Build.XmlTransformation.Tasks.IoC;
-using Microsoft.Build.Framework;
+﻿using HansKindberg.Build.XmlTransformation.Tasks.IoC;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -8,16 +6,15 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Constructors
 
-		public CollectPublishTransformation() : base(ServiceLocator.Instance.GetService<IFileSystem>(), ServiceLocator.Instance.GetService<IXmlTransformationMapFactory>()) {}
+		public CollectPublishTransformation() : base(ServiceLocator.Instance.GetService<IXmlTransformFactory>(), ServiceLocator.Instance.GetService<IXmlTransformationMapFactory>()) {}
 
 		#endregion
 
-		#region Methods
+		#region Properties
 
-		public override bool Execute()
+		protected internal override XmlTransformMode XmlTransformMode
 		{
-			this.Log.LogMessageFromText("----------- CollectPublishTransformation", MessageImportance.High);
-			return true;
+			get { return Tasks.XmlTransformMode.Publish; }
 		}
 
 		#endregion

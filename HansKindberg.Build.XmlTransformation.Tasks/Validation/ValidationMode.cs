@@ -1,4 +1,4 @@
-﻿namespace HansKindberg.Build.XmlTransformation.Tasks
+﻿namespace HansKindberg.Build.XmlTransformation.Tasks.Validation
 {
 	public enum ValidationMode
 	{

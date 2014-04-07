@@ -2,6 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<NuGetPackagesDirectory Condition="$(NuGetPackagesDirectory) == ''">$(SolutionDir)packages\</NuGetPackagesDirectory>
+		<XmlTransformationCommonBuildTransformName Condition="$(XmlTransformationCommonBuildTransformName) == ''">Build</XmlTransformationCommonBuildTransformName>
+		<XmlTransformationCommonPublishTransformName Condition="$(XmlTransformationCommonPublishTransformName) == ''">Publish</XmlTransformationCommonPublishTransformName>
+		<XmlTransformationSourceName Condition="$(XmlTransformationSourceName) == ''">Template</XmlTransformationSourceName>
 	</PropertyGroup>
 	<PropertyGroup>
 		<HansKindbergBuildXmlTransformationTasksLibrary Condition="$(HansKindbergBuildXmlTransformationTasksLibrary) == ''">$(NuGetPackagesDirectory)HansKindberg.Build.XmlTransformation.Tasks\lib\net35\HansKindberg.Build.XmlTransformation.Tasks.dll</HansKindbergBuildXmlTransformationTasksLibrary>
@@ -12,6 +15,14 @@
 		<XmlFileExtension Include=".resx" />
 		<XmlFileExtension Include=".xml" />
 	</ItemGroup>
+	<ItemDefinitionGroup>
+		<XmlTransformationMap>
+			<CommonBuildTransform>%(RelativeDir)%(Filename).$(XmlTransformationCommonBuildTransformName)%(Extension)</CommonBuildTransform>
+			<CommonPublishTransform>%(RelativeDir)%(Filename).$(XmlTransformationCommonPublishTransformName)%(Extension)</CommonPublishTransform>
+			<!-- If the "Source" is not a project relative path it must be an absolute path. -->
+			<Source>%(RelativeDir)%(Filename).$(XmlTransformationSourceName)%(Extension)</Source>
+		</XmlTransformationMap>
+	</ItemDefinitionGroup>
 	<ItemGroup Condition="@(XmlTransformationMap) == ''">
 		<XmlTransformationMap Include="Web.config">
 			<Source>$(NuGetPackagesDirectory)SomePackage\Configuration\Web.Template.config</Source>
@@ -46,6 +57,7 @@
 			Files="@(Content);@(EmbeddedResource);@(None);@(Resource)"
 			TransformName="$(Configuration)"
 			XmlFileExtensions="@(XmlFileExtension)"
+			XmlTransformationMaps="@(XmlTransformationMap)"
 		>
 			<Output TaskParameter="FilesToTransform" ItemName="FileToTransform" />
 		</CollectBuildTransformation>

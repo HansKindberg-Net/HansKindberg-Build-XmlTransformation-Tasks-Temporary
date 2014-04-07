@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Framework;
+﻿using HansKindberg.Build.XmlTransformation.Tasks.Validation;
+using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -6,7 +7,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Methods
 
-		IXmlTransformationMap Create(ITaskItem xmlTransformationMapTaskItem);
+		IXmlTransformationMap Create(ITaskItem xmlTransformationMapTaskItem, IValidationLog validationLog);
 
 		#endregion
 	}
