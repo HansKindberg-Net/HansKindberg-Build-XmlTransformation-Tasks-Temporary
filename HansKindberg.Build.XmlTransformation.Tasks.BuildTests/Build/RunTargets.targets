@@ -63,7 +63,7 @@
 		</CollectBuildTransformation>
 		<Message
 			Importance="high"
-			Text="########## --------------- FileToTransform = %(FileToTransform.Identity)"
+			Text="########## --------------- Files = @(Content);@(EmbeddedResource);@(None);@(Resource)"
 		/>
 		<!--
 		<CollectPublishTransformation

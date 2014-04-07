@@ -59,7 +59,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				xmlTransformationMap.CommonBuildTransform = this.PotentialFileFactory.Create(commonBuildTransform);
 
 				if(!xmlTransformationMap.CommonBuildTransform.Exists)
-					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonBuildTransform\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonBuildTransform\" \"{0}\" does not exist.", xmlTransformationMap.CommonBuildTransform.OriginalPath), xmlTransformationMap, validationLog);
 			}
 
 			var commonPublishTransform = xmlTransformationMapTaskItem.GetMetadata("CommonPublishTransform");
@@ -69,7 +69,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				xmlTransformationMap.CommonPublishTransform = this.PotentialFileFactory.Create(commonPublishTransform);
 
 				if(!xmlTransformationMap.CommonPublishTransform.Exists)
-					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonPublishTransform\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"CommonPublishTransform\" \"{0}\" does not exist.", xmlTransformationMap.CommonPublishTransform.OriginalPath), xmlTransformationMap, validationLog);
 			}
 
 			var source = xmlTransformationMapTaskItem.GetMetadata("Source");
@@ -79,7 +79,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				xmlTransformationMap.Source = this.PotentialFileFactory.Create(source);
 
 				if(!xmlTransformationMap.Source.Exists)
-					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"Source\" \"{0}\" does not exist.", xmlTransformationMap.Identity.OriginalPath), xmlTransformationMap, validationLog);
+					this.LogWarning(string.Format(CultureInfo.InvariantCulture, "The \"Source\" \"{0}\" does not exist.", xmlTransformationMap.Source.OriginalPath), xmlTransformationMap, validationLog);
 			}
 
 			return xmlTransformationMap;
