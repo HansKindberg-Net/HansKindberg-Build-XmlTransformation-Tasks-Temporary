@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<MessageImportance Condition="$(MessageImportance) == ''">High</MessageImportance>
+		<NuGetPackagesDirectory Condition="$(NuGetPackagesDirectory) == ''">$(SolutionDir)packages\</NuGetPackagesDirectory>
+		<NuGetVerbosity Condition="$(NuGetVerbosity) == ''">Normal</NuGetVerbosity><!-- Normal, Quiet or Detailed -->
+	</PropertyGroup>
+</Project>

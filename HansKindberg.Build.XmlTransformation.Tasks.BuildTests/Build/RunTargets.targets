@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<NuGetPackagesDirectory Condition="$(NuGetPackagesDirectory) == ''">$(SolutionDir)packages\</NuGetPackagesDirectory>
+	</PropertyGroup>
+	<PropertyGroup>
+		<HansKindbergBuildXmlTransformationTasksLibrary Condition="$(HansKindbergBuildXmlTransformationTasksLibrary) == ''">$(NuGetPackagesDirectory)HansKindberg.Build.XmlTransformation.Tasks\lib\net35\HansKindberg.Build.XmlTransformation.Tasks.dll</HansKindbergBuildXmlTransformationTasksLibrary>
+	</PropertyGroup>
+	<ItemGroup Condition="@(XmlFileExtension) == ''">
+		<!-- Case-insensitive -->
+		<XmlFileExtension Include=".config" />
+		<XmlFileExtension Include=".resx" />
+		<XmlFileExtension Include=".xml" />
+	</ItemGroup>
+	<ItemGroup Condition="@(XmlTransformationMap) == ''">
+		<XmlTransformationMap Include="Web.config">
+			<Source>$(NuGetPackagesDirectory)SomePackage\Configuration\Web.Template.config</Source>
+		</XmlTransformationMap>
+		<XmlTransformationMap Include="Views\Web.config">
+			<Source></Source>
+		</XmlTransformationMap>
+		<XmlTransformationMap Include="Test\Web.config" />
+		<XmlTransformationMap Include="Does\Not\Exist\Some.xml" />
+		<!--
+		<XmlTransformationMap Include="Web.config">
+			<CommonBuildTransform>Web.Build.config</CommonBuildTransform>
+			<CommonPublishTransform>Web.Publish.config</CommonPublishTransform>
+			<Source>Web.Template.config</Source>
+		</XmlTransformationMap>
+		<XmlTransformationMap Include="Views\Web.config">
+			<CommonBuildTransform>Web.Build.config</CommonBuildTransform>
+			<CommonPublishTransform>Views\Web.Publish.config</CommonPublishTransform>
+			<Source></Source>
+		</XmlTransformationMap>
+		<XmlTransformationMap Include="Test\Web.config">
+			<CommonBuildTransform>Test\Web.Build.config</CommonBuildTransform>
+			<CommonPublishTransform>Test\Web.Publish.config</CommonPublishTransform>
+			<Source>Test\Web.Template.config</Source>
+		</XmlTransformationMap>
+		-->
+	</ItemGroup>	
+	<UsingTask AssemblyFile="$(HansKindbergBuildXmlTransformationTasksLibrary)" TaskName="HansKindberg.Build.XmlTransformation.Tasks.CollectBuildTransformation" />
+	<UsingTask AssemblyFile="$(HansKindbergBuildXmlTransformationTasksLibrary)" TaskName="HansKindberg.Build.XmlTransformation.Tasks.CollectPublishTransformation" />
+	<Target Name="Build">
+		<CollectBuildTransformation
+			Files="@(Content);@(EmbeddedResource);@(None);@(Resource)"
+			TransformName="$(Configuration)"
+			XmlFileExtensions="@(XmlFileExtension)"
+		>
+			<Output TaskParameter="FilesToTransform" ItemName="FileToTransform" />
+		</CollectBuildTransformation>
+		<Message
+			Importance="high"
+			Text="########## --------------- FileToTransform = %(FileToTransform.Identity)"
+		/>
+		<!--
+		<CollectPublishTransformation
+		/>
+		-->
+	</Target>
+</Project>

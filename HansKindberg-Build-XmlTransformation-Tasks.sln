@@ -1,0 +1,80 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E9B16DCA-8DD4-4C88-A650-9AD7F5BDEB56}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.config = .nuget\NuGet.config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeAnalysis", "CodeAnalysis", "{4972F923-C41F-4E05-AB2D-A92FAEAF903D}"
+	ProjectSection(SolutionItems) = preProject
+		CodeAnalysis\Solution.ruleset = CodeAnalysis\Solution.ruleset
+		CodeAnalysis\Solution.Tests.ruleset = CodeAnalysis\Solution.Tests.ruleset
+		CodeAnalysis\SolutionDictionary.xml = CodeAnalysis\SolutionDictionary.xml
+		CodeAnalysis\SolutionSuppressions.cs = CodeAnalysis\SolutionSuppressions.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{AE1BCE1F-0AD1-492A-8AAC-8802209F60CD}"
+	ProjectSection(SolutionItems) = preProject
+		Properties\Solution-AssemblyInfo.cs = Properties\Solution-AssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signing", "Signing", "{0D56FD5E-264B-4218-A8DD-F11283E6A1B2}"
+	ProjectSection(SolutionItems) = preProject
+		Signing\HansKindberg.snk = Signing\HansKindberg.snk
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{A8560463-717F-4AD7-8D9C-2271803A5B4A}"
+	ProjectSection(SolutionItems) = preProject
+		ReadMe.md = ReadMe.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HansKindberg.Build.XmlTransformation.Tasks", "HansKindberg.Build.XmlTransformation.Tasks\HansKindberg.Build.XmlTransformation.Tasks.csproj", "{A0DE02A6-0312-4D39-82A0-C4DC66E91819}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HansKindberg.Build.XmlTransformation.Tasks.UnitTests", "HansKindberg.Build.XmlTransformation.Tasks.UnitTests\HansKindberg.Build.XmlTransformation.Tasks.UnitTests.csproj", "{6016FEA5-3EBF-4766-897E-89CC8F029159}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HansKindberg.Build.XmlTransformation.Tasks.BuildTests", "HansKindberg.Build.XmlTransformation.Tasks.BuildTests\HansKindberg.Build.XmlTransformation.Tasks.BuildTests.csproj", "{6755AAF8-7DB2-4830-B028-E34BBBBBAF3D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A0DE02A6-0312-4D39-82A0-C4DC66E91819} = {A0DE02A6-0312-4D39-82A0-C4DC66E91819}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "packages", "packages", "{C64DC674-023C-4588-81C8-D2643FC4089A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SomePackage", "SomePackage", "{9D86EEFE-EB46-42E8-88B3-6F82277145B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration", "Configuration", "{054183C6-DED1-4AF1-92A5-9CE32752BADD}"
+	ProjectSection(SolutionItems) = preProject
+		packages\SomePackage\Configuration\Web.Template.config = packages\SomePackage\Configuration\Web.Template.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0DE02A6-0312-4D39-82A0-C4DC66E91819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0DE02A6-0312-4D39-82A0-C4DC66E91819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0DE02A6-0312-4D39-82A0-C4DC66E91819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0DE02A6-0312-4D39-82A0-C4DC66E91819}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6016FEA5-3EBF-4766-897E-89CC8F029159}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6016FEA5-3EBF-4766-897E-89CC8F029159}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6016FEA5-3EBF-4766-897E-89CC8F029159}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6016FEA5-3EBF-4766-897E-89CC8F029159}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6755AAF8-7DB2-4830-B028-E34BBBBBAF3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6755AAF8-7DB2-4830-B028-E34BBBBBAF3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6755AAF8-7DB2-4830-B028-E34BBBBBAF3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6755AAF8-7DB2-4830-B028-E34BBBBBAF3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9D86EEFE-EB46-42E8-88B3-6F82277145B9} = {C64DC674-023C-4588-81C8-D2643FC4089A}
+		{054183C6-DED1-4AF1-92A5-9CE32752BADD} = {9D86EEFE-EB46-42E8-88B3-6F82277145B9}
+	EndGlobalSection
+EndGlobal
