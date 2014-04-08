@@ -1,12 +1,7 @@
-﻿using System.IO.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.UnitTests
 {
 	[TestClass]
-	public class PotentialFileTest
-	{
-
-	}
+	public class PotentialFileTest {}
 }
