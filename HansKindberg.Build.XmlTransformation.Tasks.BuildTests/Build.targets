@@ -16,6 +16,6 @@
 	<Target Name="RunTargetsInNewInstanceOfMSBuild">
 		<!-- Run in a new instance of MSBuild so MSBuild does not lock the HansKindberg.Build.XmlTransformation.Tasks dll. -->
 		<!--<Exec Command="&quot;$(MSBuildToolsPath)\MSBuild.exe&quot; &quot;$(ProjectDir)RunTasks.targets&quot; /nologo /verbosity:minimal /property:Configuration=$(Configuration);SolutionDir=&quot;$(SolutionDir)" />-->
-		<Exec Command="&quot;$(MSBuildToolsPath)\MSBuild.exe&quot; &quot;$(ProjectDir)Build\RunTargets.targets&quot; /nologo /verbosity:minimal /property:Configuration=$(Configuration);OutDir=$(OutDir);SolutionDir=&quot;$(SolutionDir)" />
+		<Exec Command="&quot;$(MSBuildToolsPath)\MSBuild.exe&quot; &quot;$(ProjectDir)RunTargets.targets&quot; /nologo /verbosity:minimal /property:Configuration=$(Configuration);OutDir=$(OutDir);SolutionDir=&quot;$(SolutionDir)" />
 	</Target>
 </Project>

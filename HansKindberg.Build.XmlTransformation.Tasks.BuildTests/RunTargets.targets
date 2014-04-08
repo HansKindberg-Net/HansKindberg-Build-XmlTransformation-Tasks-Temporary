@@ -49,25 +49,74 @@
 			<Source>Test\Web.Template.config</Source>
 		</XmlTransformationMap>
 		-->
-	</ItemGroup>	
+	</ItemGroup>
+
+
+
+
+
+	<!-- When adding more files to the project, recopy this from the project file so it is included here otherwhise no files will exist. -->		
+	<ItemGroup>
+		<None Include="Build.props" />
+		<None Include="Build.targets" />
+		<None Include="RunTargets.targets" />
+		<Content Include="Web.config" />
+		<None Include="Web.Build.config">
+			<DependentUpon>Web.config</DependentUpon>
+		</None>
+		<None Include="Web.Debug.config">
+			<DependentUpon>Web.Build.config</DependentUpon>
+		</None>
+		<None Include="Web.Production.config">
+			<DependentUpon>Web.Publish.config</DependentUpon>
+		</None>
+		<None Include="Web.Publish.config">
+			<DependentUpon>Web.config</DependentUpon>
+		</None>
+		<None Include="Web.Release.config">
+			<DependentUpon>Web.Build.config</DependentUpon>
+		</None>
+		<None Include="Web.Test.config">
+			<DependentUpon>Web.Publish.config</DependentUpon>
+		</None>
+	</ItemGroup>
+			
+			
+			
+		
+		
+			
+			
+			
 	<UsingTask AssemblyFile="$(HansKindbergBuildXmlTransformationTasksLibrary)" TaskName="HansKindberg.Build.XmlTransformation.Tasks.CollectBuildTransformation" />
 	<UsingTask AssemblyFile="$(HansKindbergBuildXmlTransformationTasksLibrary)" TaskName="HansKindberg.Build.XmlTransformation.Tasks.CollectPublishTransformation" />
 	<Target Name="Build">
+		<ItemGroup>
+			<File Include="@(Content);@(EmbeddedResource);@(None);@(Resource)" />
+		</ItemGroup>
 		<CollectBuildTransformation
-			Files="@(Content);@(EmbeddedResource);@(None);@(Resource)"
+			DestinationDirectory=""
+			Files="@(File)"
 			TransformName="$(Configuration)"
 			XmlFileExtensions="@(XmlFileExtension)"
 			XmlTransformationMaps="@(XmlTransformationMap)"
 		>
 			<Output TaskParameter="FilesToTransform" ItemName="FileToTransform" />
 		</CollectBuildTransformation>
+	</Target>
+	<Target Name="CheckIfProjectFilesExists">
+		<ItemGroup>
+			<File Include="@(Content);@(EmbeddedResource);@(None);@(Resource)" />
+		</ItemGroup>
 		<Message
+			Condition="Exists('%(File.Identity)')"
 			Importance="high"
-			Text="########## --------------- Files = @(Content);@(EmbeddedResource);@(None);@(Resource)"
+			Text="File = '%(File.Identity)' exists"
 		/>
-		<!--
-		<CollectPublishTransformation
+		<Message
+			Condition="!Exists('%(File.Identity)')"
+			Importance="high"
+			Text="File = '%(File.Identity)' does NOT exist"
 		/>
-		-->
 	</Target>
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace HansKindberg.Build.XmlTransformation.Tasks
+﻿using Microsoft.Build.Framework;
+
+namespace HansKindberg.Build.XmlTransformation.Tasks
 {
 	public interface IPotentialFile
 	{
@@ -10,6 +12,7 @@
 		bool IsFile { get; }
 		string Name { get; }
 		string OriginalPath { get; }
+		ITaskItem TaskItem { get; }
 
 		#endregion
 	}

@@ -11,8 +11,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 
 		private readonly IFileSystem _fileSystem;
 		private IPotentialFileFactory _potentialFileFactory;
-		private IXmlTransformFactory _xmlTransformFactory;
-		private IXmlTransformationMapFactory _xmlTransformationMapFactory;
+		private IXmlTransformationContext _xmlTransformationContext;
+		private IXmlTransformationMapRepository _xmlTransformationMapRepository;
 
 		#endregion
 
@@ -34,17 +34,17 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 
 		protected internal virtual IPotentialFileFactory PotentialFileFactory
 		{
-			get { return this._potentialFileFactory ?? (this._potentialFileFactory = new PotentialFileFactory(this.FileSystem)); }
+			get { return this._potentialFileFactory ?? (this._potentialFileFactory = this.XmlTransformationContext); }
 		}
 
-		protected internal virtual IXmlTransformFactory XmlTransformFactory
+		protected internal virtual IXmlTransformationContext XmlTransformationContext
 		{
-			get { return this._xmlTransformFactory ?? (this._xmlTransformFactory = new XmlTransformFactory(this.PotentialFileFactory)); }
+			get { return this._xmlTransformationContext ?? (this._xmlTransformationContext = new XmlTransformationContext(this.FileSystem)); }
 		}
 
-		protected internal virtual IXmlTransformationMapFactory XmlTransformationMapFactory
+		protected internal virtual IXmlTransformationMapRepository XmlTransformationMapRepository
 		{
-			get { return this._xmlTransformationMapFactory ?? (this._xmlTransformationMapFactory = new XmlTransformationMapFactory(this.PotentialFileFactory)); }
+			get { return this._xmlTransformationMapRepository ?? (this._xmlTransformationMapRepository = this.XmlTransformationContext); }
 		}
 
 		#endregion
@@ -62,11 +62,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			if(serviceType == typeof(IPotentialFileFactory))
 				return this.PotentialFileFactory;
 
-			if(serviceType == typeof(IXmlTransformationMapFactory))
-				return this.XmlTransformationMapFactory;
+			if(serviceType == typeof(IXmlTransformationContext))
+				return this.XmlTransformationContext;
 
-			if(serviceType == typeof(IXmlTransformFactory))
-				return this.XmlTransformFactory;
+			if(serviceType == typeof(IXmlTransformationMapRepository))
+				return this.XmlTransformationMapRepository;
 
 			return Activator.CreateInstance(serviceType);
 		}

@@ -3,11 +3,11 @@ using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
-	public interface IXmlTransformationMapFactory
+	public interface IXmlTransformationMapRepository
 	{
 		#region Methods
 
-		IXmlTransformationMap Create(ITaskItem xmlTransformationMapTaskItem, IValidationLog validationLog);
+		IXmlTransformationMap GetXmlTransformationMap(ITaskItem xmlFile, IValidationLog validationLog);
 
 		#endregion
 	}

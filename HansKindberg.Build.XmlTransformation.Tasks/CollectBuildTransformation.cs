@@ -6,7 +6,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Constructors
 
-		public CollectBuildTransformation() : base(ServiceLocator.Instance.GetService<IXmlTransformFactory>(), ServiceLocator.Instance.GetService<IXmlTransformationMapFactory>()) {}
+		public CollectBuildTransformation() : this(ServiceLocator.Instance.GetService<IXmlTransformationContext>()) {}
+		public CollectBuildTransformation(IXmlTransformationContext xmlTransformationContext) : base(xmlTransformationContext) {}
 
 		#endregion
 
