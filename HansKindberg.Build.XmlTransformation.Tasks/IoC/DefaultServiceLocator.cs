@@ -10,9 +10,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 		#region Fields
 
 		private readonly IFileSystem _fileSystem;
-		private IPotentialFileFactory _potentialFileFactory;
-		private IXmlTransformationContext _xmlTransformationContext;
-		private IXmlTransformationMapRepository _xmlTransformationMapRepository;
+		private IXmlTransformationDecoratorFactory _xmlTransformationDecoratorFactory;
 
 		#endregion
 
@@ -32,19 +30,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._fileSystem; }
 		}
 
-		protected internal virtual IPotentialFileFactory PotentialFileFactory
+		protected internal virtual IXmlTransformationDecoratorFactory XmlTransformationDecoratorFactory
 		{
-			get { return this._potentialFileFactory ?? (this._potentialFileFactory = this.XmlTransformationContext); }
-		}
-
-		protected internal virtual IXmlTransformationContext XmlTransformationContext
-		{
-			get { return this._xmlTransformationContext ?? (this._xmlTransformationContext = new XmlTransformationContext(this.FileSystem)); }
-		}
-
-		protected internal virtual IXmlTransformationMapRepository XmlTransformationMapRepository
-		{
-			get { return this._xmlTransformationMapRepository ?? (this._xmlTransformationMapRepository = this.XmlTransformationContext); }
+			get { return this._xmlTransformationDecoratorFactory ?? (this._xmlTransformationDecoratorFactory = new XmlTransformationDecoratorFactory(this.FileSystem)); }
 		}
 
 		#endregion
@@ -59,14 +47,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			if(serviceType == typeof(IFileSystem))
 				return this.FileSystem;
 
-			if(serviceType == typeof(IPotentialFileFactory))
-				return this.PotentialFileFactory;
-
-			if(serviceType == typeof(IXmlTransformationContext))
-				return this.XmlTransformationContext;
-
-			if(serviceType == typeof(IXmlTransformationMapRepository))
-				return this.XmlTransformationMapRepository;
+			if(serviceType == typeof(IXmlTransformationDecoratorFactory))
+				return this.XmlTransformationDecoratorFactory;
 
 			return Activator.CreateInstance(serviceType);
 		}

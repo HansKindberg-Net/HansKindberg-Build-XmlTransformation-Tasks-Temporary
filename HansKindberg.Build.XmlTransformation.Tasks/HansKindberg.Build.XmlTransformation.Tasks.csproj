@@ -61,15 +61,18 @@
     <Compile Include="CollectPublishTransformation.cs" />
     <Compile Include="CollectBuildTransformation.cs" />
     <Compile Include="CollectXmlTransformation.cs" />
+    <Compile Include="Framework\Extensions\TaskItemExtension.cs" />
     <Compile Include="IoC\DefaultServiceLocator.cs" />
     <Compile Include="IoC\IServiceLocator.cs" />
     <Compile Include="IoC\ServiceLocator.cs" />
     <Compile Include="IPotentialFile.cs" />
     <Compile Include="IPotentialFileFactory.cs" />
     <Compile Include="ITransformableXmlFile.cs" />
-    <Compile Include="IXmlTransformationContext.cs" />
+    <Compile Include="IXmlTransformationDecorator.cs" />
+    <Compile Include="IXmlTransformationDecoratorFactory.cs" />
     <Compile Include="IXmlTransformationMap.cs" />
     <Compile Include="IXmlTransformationMapRepository.cs" />
+    <Compile Include="IXmlTransformationSettings.cs" />
     <Compile Include="PotentialFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Validation\IValidationLog.cs" />
@@ -79,9 +82,11 @@
     <Compile Include="Validation\ValidationMode.cs" />
     <Compile Include="Validation\ValidationWarning.cs" />
     <Compile Include="TransformableXmlFile.cs" />
-    <Compile Include="XmlTransformationContext.cs" />
+    <Compile Include="XmlTransformationDecorator.cs" />
+    <Compile Include="XmlTransformationDecoratorFactory.cs" />
     <Compile Include="XmlTransformationMap.cs" />
-    <Compile Include="XmlTransformMode.cs" />
+    <Compile Include="TransformMode.cs" />
+    <Compile Include="XmlTransformationSettings.cs" />
     <None Include="..\Signing\HansKindberg.snk">
       <Link>HansKindberg.snk</Link>
     </None>

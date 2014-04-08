@@ -27,6 +27,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 			this._taskItem = taskItem;
 
+			if(taskItem.ToString().Length <= 0)
+				return;
+
 			try
 			{
 				this._fileInfo = fileSystem.FileInfo.FromFileName(taskItem.ToString());

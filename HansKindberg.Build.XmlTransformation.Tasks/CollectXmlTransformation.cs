@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Linq;
 using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
@@ -13,25 +13,30 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Fields
 
+		private readonly IFileSystem _fileSystem;
 		private ITaskItem[] _files;
 		private ITaskItem[] _filesToTransform;
 		private string _transformName;
 		private readonly IValidationLog _validationLog = new ValidationLog();
 		private ValidationMode _validationMode = Validation.ValidationMode.Warning;
 		private ITaskItem[] _xmlFileExtensions;
-		private readonly IXmlTransformationContext _xmlTransformationContext;
+		private readonly IXmlTransformationDecoratorFactory _xmlTransformationDecoratorFactory;
 		private ITaskItem[] _xmlTransformationMaps;
 
 		#endregion
 
 		#region Constructors
 
-		protected CollectXmlTransformation(IXmlTransformationContext xmlTransformationContext)
+		protected CollectXmlTransformation(IFileSystem fileSystem, IXmlTransformationDecoratorFactory xmlTransformationDecoratorFactory)
 		{
-			if(xmlTransformationContext == null)
-				throw new ArgumentNullException("xmlTransformationContext");
+			if(fileSystem == null)
+				throw new ArgumentNullException("fileSystem");
 
-			this._xmlTransformationContext = xmlTransformationContext;
+			if(xmlTransformationDecoratorFactory == null)
+				throw new ArgumentNullException("xmlTransformationDecoratorFactory");
+
+			this._fileSystem = fileSystem;
+			this._xmlTransformationDecoratorFactory = xmlTransformationDecoratorFactory;
 		}
 
 		#endregion
@@ -40,6 +45,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		public virtual string AppConfigDestinationDirectory { get; set; }
 		public virtual string DestinationDirectory { get; set; }
+
+		protected internal virtual IFileSystem FileSystem
+		{
+			get { return this._fileSystem; }
+		}
 
 		[Required]
 		public virtual ITaskItem[] Files
@@ -56,6 +66,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		}
 
 		public virtual bool SeparateSourceIsRequired { get; set; }
+		protected internal abstract TransformMode TransformMode { get; }
 
 		[Required]
 		public virtual string TransformName
@@ -88,11 +99,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			set { this._xmlFileExtensions = value; }
 		}
 
-		protected internal abstract XmlTransformMode XmlTransformMode { get; }
-
-		protected internal virtual IXmlTransformationContext XmlTransformationContext
+		protected internal virtual IXmlTransformationDecoratorFactory XmlTransformationDecoratorFactory
 		{
-			get { return this._xmlTransformationContext; }
+			get { return this._xmlTransformationDecoratorFactory; }
 		}
 
 		public virtual ITaskItem[] XmlTransformationMaps
@@ -105,6 +114,20 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
+		protected internal virtual IXmlTransformationSettings CreateXmlTransformationSettings()
+		{
+			return new XmlTransformationSettings
+			{
+				AppConfigDestinationDirectory = this.AppConfigDestinationDirectory,
+				DestinationDirectory = this.DestinationDirectory,
+				SeparateSourceIsRequired = this.SeparateSourceIsRequired,
+				TransformMode = this.TransformMode,
+				TransformName = this.TransformName,
+				XmlFileExtensions = this.XmlFileExtensions.Select(xmlFileExtension => xmlFileExtension.ItemSpec).ToArray(),
+				XmlTransformationMaps = this.XmlTransformationMaps
+			};
+		}
+
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		public override bool Execute()
 		{
@@ -116,26 +139,16 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				if(!this.Files.Any())
 					return true;
 
-				this.XmlTransformationContext.XmlFileExtensions = this.XmlFileExtensions;
-				this.XmlTransformationContext.XmlTransformationMaps = this.XmlTransformationMaps;
+				var xmlTransformationDecorator = this.XmlTransformationDecoratorFactory.Create(this.CreateXmlTransformationSettings(), this.ValidationLog);
 
-				var transformableXmlFiles = this.XmlTransformationContext.GetTransformableXmlFiles(this.Files, this.TransformName, this.XmlTransformMode, this.ValidationLog);
+				xmlTransformationDecorator.GetDecoratedXmlFiles(this.Files);
 
-				transformableXmlFiles = transformableXmlFiles;
+				this.FilesToTransform = xmlTransformationDecorator.GetDecoratedXmlFiles(this.Files).ToArray();
 
-				var filesToTransform = new List<ITaskItem>();
-				//foreach(var xmlFile in xmlFiles)
-				//{
-				//	var xmlFileToTransform = xmlFilesToTransform.FirstOrDefault(x => xmlFile.ItemSpec.Equals(x.XmlFile.OriginalPath, StringComparison.OrdinalIgnoreCase));
-
-				//	if(xmlFileToTransform != null)
-				//	{
-				//		xmlFile.SetMetadata("IsAppConfig", xmlFileToTransform.IsAppConfig.ToString());
-				//		xmlFile.SetMetadata("", xmlFileToTransform.);
-				//	}
-				//}
-
-				this.FilesToTransform = filesToTransform.ToArray();
+				foreach(var taskItem in this.FilesToTransform)
+				{
+					taskItem.SetMetadata("MetadataNames", string.Join(";", taskItem.MetadataNames.Cast<string>().ToArray()));
+				}
 
 				this.TransferValidationLog();
 			}
@@ -188,6 +201,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		[SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])")]
 		[SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "AppConfigDestinationDirectory")]
 		[SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DestinationDirectory")]
+		[SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TransformName")]
 		protected internal virtual bool Validate()
 		{
 			bool validate = true;
@@ -196,11 +210,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			{
 				try
 				{
-					this.XmlTransformationContext.FileSystem.DirectoryInfo.FromDirectoryName(this.AppConfigDestinationDirectory);
+					this.FileSystem.DirectoryInfo.FromDirectoryName(this.AppConfigDestinationDirectory);
 				}
-				catch(Exception exception)
+				catch
 				{
-					this.Log.LogError(string.Format(CultureInfo.InvariantCulture, "The \"AppConfigDestinationDirectory\" value \"{0}\" is invalid. {1}", this.AppConfigDestinationDirectory, exception));
+					this.Log.LogError(string.Format(CultureInfo.InvariantCulture, "The \"AppConfigDestinationDirectory\" value \"{0}\" is invalid. A valid directory-name is required.", this.AppConfigDestinationDirectory));
 					validate = false;
 				}
 			}
@@ -209,13 +223,23 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			{
 				try
 				{
-					this.XmlTransformationContext.FileSystem.DirectoryInfo.FromDirectoryName(this.DestinationDirectory);
+					this.FileSystem.DirectoryInfo.FromDirectoryName(this.DestinationDirectory);
 				}
-				catch(Exception exception)
+				catch
 				{
-					this.Log.LogError(string.Format(CultureInfo.InvariantCulture, "The \"DestinationDirectory\" value \"{0}\" is invalid. {1}", this.DestinationDirectory, exception));
+					this.Log.LogError(string.Format(CultureInfo.InvariantCulture, "The \"DestinationDirectory\" value \"{0}\" is invalid. A valid directory-name is required.", this.DestinationDirectory));
 					validate = false;
 				}
+			}
+
+			try
+			{
+				this.FileSystem.FileInfo.FromFileName(this.TransformName);
+			}
+			catch
+			{
+				this.Log.LogError(string.Format(CultureInfo.InvariantCulture, "The \"TransformName\" value \"{0}\" is invalid. A valid file-name is required.", this.TransformName));
+				validate = false;
 			}
 
 			return validate;

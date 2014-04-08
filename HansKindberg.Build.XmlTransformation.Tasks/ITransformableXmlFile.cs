@@ -1,16 +1,16 @@
-﻿namespace HansKindberg.Build.XmlTransformation.Tasks
+﻿using Microsoft.Build.Framework;
+
+namespace HansKindberg.Build.XmlTransformation.Tasks
 {
-	public interface ITransformableXmlFile
+	public interface ITransformableXmlFile : ITaskItem
 	{
 		#region Properties
 
-		IPotentialFile Identity { get; }
+		IPotentialFile Destination { get; }
 		bool IsAppConfig { get; }
 		IPotentialFile PreTransform { get; }
-		bool PreTransformIsValid { get; }
 		IPotentialFile Source { get; }
 		IPotentialFile Transform { get; }
-		bool TransformIsValid { get; }
 
 		#endregion
 	}

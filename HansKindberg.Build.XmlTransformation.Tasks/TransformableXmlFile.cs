@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Globalization;
-using System.IO.Abstractions;
-using HansKindberg.Build.XmlTransformation.Tasks.Validation;
+using System.Collections;
+using HansKindberg.Build.Framework.Extensions;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -11,102 +9,97 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Fields
 
-		private readonly IPotentialFile _identity;
-		private readonly IPotentialFile _preTransform;
-		private readonly IPotentialFile _source;
-		private readonly IPotentialFile _transform;
+		private IPotentialFile _destination;
+		private bool _isAppConfig;
+		private IPotentialFile _preTransform;
+		private IPotentialFile _source;
+		private readonly ITaskItem _taskItem;
+		private IPotentialFile _transform;
 
 		#endregion
 
 		#region Constructors
 
-		public TransformableXmlFile(ITaskItem xmlFile, string transformName, XmlTransformMode transformMode, IFileSystem fileSystem, IPotentialFileFactory potentialFileFactory, IXmlTransformationMapRepository xmlTransformationMapRepository, IValidationLog validationLog)
+		public TransformableXmlFile(ITaskItem taskItem)
 		{
-			if(xmlFile == null)
-				throw new ArgumentNullException("xmlFile");
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
 
-			if(fileSystem == null)
-				throw new ArgumentNullException("fileSystem");
-
-			if(potentialFileFactory == null)
-				throw new ArgumentNullException("potentialFileFactory");
-
-			if(xmlTransformationMapRepository == null)
-				throw new ArgumentNullException("xmlTransformationMapRepository");
-
-			if(validationLog == null)
-				throw new ArgumentNullException("validationLog");
-
-			this._identity = potentialFileFactory.CreatePotentialFile(xmlFile);
-
-			if(!this._identity.Exists)
-				validationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "The xml-file \"{0}\" does not exist.", this._identity));
-
-			var xmlTransformationMap = xmlTransformationMapRepository.GetXmlTransformationMap(xmlFile, validationLog);
-
-			if(xmlTransformationMap != null)
-			{
-				this._preTransform = transformMode == XmlTransformMode.Build ? xmlTransformationMap.CommonBuildTransform : xmlTransformationMap.CommonPublishTransform;
-				this._source = xmlTransformationMap.Source ?? this._identity;
-			}
-
-			this._transform = potentialFileFactory.CreatePotentialFile(new TaskItem(fileSystem.Path.GetFileNameWithoutExtension(this._identity.ToString()) + "." + (transformName ?? string.Empty) + this._identity.Extension));
+			this._taskItem = taskItem;
+			this.SetIsAppConfig();
 		}
 
 		#endregion
 
 		#region Properties
 
-		public virtual IPotentialFile Identity
+		public virtual IPotentialFile Destination
 		{
-			get { return this._identity; }
+			get { return this._destination; }
+			set
+			{
+				this.SetMetadata("Destination", value);
+				this._destination = value;
+			}
 		}
 
 		public virtual bool IsAppConfig
 		{
-			get { return this.Identity.ToString().Equals("App.config", StringComparison.OrdinalIgnoreCase); }
+			get { return this._isAppConfig; }
+		}
+
+		public virtual string ItemSpec
+		{
+			get { return this.TaskItem.ItemSpec; }
+			set
+			{
+				this.TaskItem.ItemSpec = value;
+				this.SetIsAppConfig();
+			}
+		}
+
+		public virtual int MetadataCount
+		{
+			get { return this.TaskItem.MetadataCount; }
+		}
+
+		public virtual ICollection MetadataNames
+		{
+			get { return this.TaskItem.MetadataNames; }
 		}
 
 		public virtual IPotentialFile PreTransform
 		{
 			get { return this._preTransform; }
-		}
-
-		public virtual bool PreTransformIsValid
-		{
-			get
+			set
 			{
-				if(!this.PreTransform.Exists)
-					return false;
-
-				if(!this.Source.Exists)
-					return false;
-
-				return true;
+				this.SetMetadata("PreTransform", value);
+				this._preTransform = value;
 			}
 		}
 
 		public virtual IPotentialFile Source
 		{
 			get { return this._source; }
+			set
+			{
+				this.SetMetadata("Source", value);
+				this._source = value;
+			}
+		}
+
+		public virtual ITaskItem TaskItem
+		{
+			get { return this._taskItem; }
 		}
 
 		public virtual IPotentialFile Transform
 		{
 			get { return this._transform; }
-		}
-
-		public virtual bool TransformIsValid
-		{
-			get
+			set
 			{
-				if(!this.Transform.Exists)
-					return false;
-
-				if(!this.Source.Exists)
-					return false;
-
-				return true;
+				this.SetMetadata("Transform", value);
+				this._transform = value;
 			}
 		}
 
@@ -114,9 +107,46 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
+		public virtual IDictionary CloneCustomMetadata()
+		{
+			return this.TaskItem.CloneCustomMetadata();
+		}
+
+		public virtual void CopyMetadataTo(ITaskItem destinationItem)
+		{
+			this.TaskItem.CopyMetadataTo(destinationItem);
+		}
+
+		public virtual string GetMetadata(string metadataName)
+		{
+			return this.TaskItem.GetMetadata(metadataName);
+		}
+
+		public virtual void RemoveMetadata(string metadataName)
+		{
+			this.TaskItem.RemoveMetadata(metadataName);
+		}
+
+		private void SetIsAppConfig()
+		{
+			this._taskItem.SetMetadata("IsAppConfig", this._taskItem.IsAppConfig().ToString());
+			this._isAppConfig = this._taskItem.IsAppConfig();
+		}
+
+		protected internal virtual void SetMetadata(string metadataName, IPotentialFile potentialFile)
+		{
+			string value = potentialFile != null ? potentialFile.OriginalPath : string.Empty;
+			this.SetMetadata(metadataName, value);
+		}
+
+		public virtual void SetMetadata(string metadataName, string metadataValue)
+		{
+			this.TaskItem.SetMetadata(metadataName, metadataValue);
+		}
+
 		public override string ToString()
 		{
-			return this.Identity.ToString();
+			return this.TaskItem.ToString();
 		}
 
 		#endregion

@@ -31,6 +31,25 @@
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
+		<Content Include="App.config" />
+		<None Include="App.Build.config">
+			<DependentUpon>App.config</DependentUpon>
+		</None>
+		<None Include="App.Debug.config">
+			<DependentUpon>App.Build.config</DependentUpon>
+		</None>
+		<None Include="App.Production.config">
+			<DependentUpon>App.Publish.config</DependentUpon>
+		</None>
+		<None Include="App.Publish.config">
+			<DependentUpon>App.config</DependentUpon>
+		</None>
+		<None Include="App.Release.config">
+			<DependentUpon>App.Build.config</DependentUpon>
+		</None>
+		<None Include="App.Test.config">
+			<DependentUpon>App.Publish.config</DependentUpon>
+		</None>
 		<None Include="Build.props" />
 		<None Include="Build.targets" />
 		<None Include="RunTargets.targets" />

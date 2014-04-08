@@ -1,6 +1,6 @@
 ﻿namespace HansKindberg.Build.XmlTransformation.Tasks
 {
-	public enum XmlTransformMode
+	public enum TransformMode
 	{
 		Build,
 		Publish

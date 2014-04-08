@@ -57,6 +57,25 @@
 
 	<!-- When adding more files to the project, recopy this from the project file so it is included here otherwhise no files will exist. -->		
 	<ItemGroup>
+		<Content Include="App.config" />
+		<None Include="App.Build.config">
+			<DependentUpon>App.config</DependentUpon>
+		</None>
+		<None Include="App.Debug.config">
+			<DependentUpon>App.Build.config</DependentUpon>
+		</None>
+		<None Include="App.Production.config">
+			<DependentUpon>App.Publish.config</DependentUpon>
+		</None>
+		<None Include="App.Publish.config">
+			<DependentUpon>App.config</DependentUpon>
+		</None>
+		<None Include="App.Release.config">
+			<DependentUpon>App.Build.config</DependentUpon>
+		</None>
+		<None Include="App.Test.config">
+			<DependentUpon>App.Publish.config</DependentUpon>
+		</None>
 		<None Include="Build.props" />
 		<None Include="Build.targets" />
 		<None Include="RunTargets.targets" />
@@ -103,6 +122,14 @@
 		>
 			<Output TaskParameter="FilesToTransform" ItemName="FileToTransform" />
 		</CollectBuildTransformation>
+		<Message
+			Importance="high"
+			Text="%0aFilesToTransform%0a================"
+		/>
+		<Message
+			Importance="high"
+			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - PreTransform = '%(FileToTransform.PreTransform)'%0a   - Source = '%(FileToTransform.Source)'%0a   - Transform = '%(FileToTransform.Transform)'"
+		/>
 	</Target>
 	<Target Name="CheckIfProjectFilesExists">
 		<ItemGroup>
