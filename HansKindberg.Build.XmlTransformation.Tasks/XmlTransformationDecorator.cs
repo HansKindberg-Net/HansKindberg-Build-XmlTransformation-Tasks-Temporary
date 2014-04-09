@@ -152,6 +152,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			file.Destination(string.Empty);
 			file.IsAppConfig(false);
 			file.IsValid(false);
+			file.OriginalItemSpecification(file.ItemSpec);
 			file.PreTransform(string.Empty);
 			file.PreTransformIsValid(false);
 			file.Source(string.Empty);
@@ -218,21 +219,22 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 					if(file.PreTransformIsValid())
 					{
 						var filePreTransform = new TaskItem(file);
+
+						filePreTransform.ItemSpec = filePreTransform.Source();
+
 						filePreTransform.Transform(filePreTransform.PreTransform());
 						filePreTransform.TransformIsValid(filePreTransform.PreTransformIsValid());
-						filePreTransform.RemovePreTransform();
-						filePreTransform.RemovePreTransformIsValid();
+
+						this.RemoveTemporaryDecorations(filePreTransform);
 
 						yield return filePreTransform;
 					}
 
 					if(file.TransformIsValid())
 					{
-						if(file.PreTransformIsValid())
-							file.Source(file.Destination());
+						file.ItemSpec = file.PreTransformIsValid() ? file.Destination() : file.Source();
 
-						file.RemovePreTransform();
-						file.RemovePreTransformIsValid();
+						this.RemoveTemporaryDecorations(file);
 
 						yield return file;
 					}
@@ -289,6 +291,18 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				throw new ArgumentNullException("taskItem");
 
 			this.ValidationLog.LogWarning(information + string.Format(CultureInfo.InvariantCulture, " See the \"XmlTransformationMap\"-itemgroup with identity \"{0}\".", taskItem));
+		}
+
+		protected internal virtual void RemoveTemporaryDecorations(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			file.RemovePreTransform();
+			file.RemovePreTransformIsValid();
+
+			file.RemoveSource();
+			file.RemoveSourceIsValid();
 		}
 
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]

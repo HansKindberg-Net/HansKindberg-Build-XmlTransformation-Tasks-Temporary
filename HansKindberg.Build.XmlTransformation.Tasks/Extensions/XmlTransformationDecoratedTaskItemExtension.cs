@@ -11,6 +11,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 		private const string _destinationMetadataName = "Destination";
 		private const string _isAppConfigMetadataName = "IsAppConfig";
 		private const string _isValidMetadataName = "IsValid";
+		private const string _originalItemSpecificationMetadataName = "OriginalItemSpecification";
 		private const string _preTransformIsValidMetadataName = "PreTransformIsValid";
 		private const string _preTransformMetadataName = "PreTransform";
 		private const string _sourceIsValidMetadataName = "SourceIsValid";
@@ -92,6 +93,22 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 			taskItem.SetMetadata(_isValidMetadataName, value.ToString());
 		}
 
+		public static string OriginalItemSpecification(this ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			return taskItem.GetMetadata(_originalItemSpecificationMetadataName);
+		}
+
+		public static void OriginalItemSpecification(this ITaskItem taskItem, string value)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			taskItem.SetMetadata(_originalItemSpecificationMetadataName, value);
+		}
+
 		public static string PreTransform(this ITaskItem taskItem)
 		{
 			if(taskItem == null)
@@ -140,6 +157,22 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 				throw new ArgumentNullException("taskItem");
 
 			taskItem.RemoveMetadata(_preTransformIsValidMetadataName);
+		}
+
+		public static void RemoveSource(this ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			taskItem.RemoveMetadata(_sourceMetadataName);
+		}
+
+		public static void RemoveSourceIsValid(this ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			taskItem.RemoveMetadata(_sourceIsValidMetadataName);
 		}
 
 		public static string Source(this ITaskItem taskItem)
