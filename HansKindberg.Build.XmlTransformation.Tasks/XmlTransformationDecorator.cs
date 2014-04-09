@@ -300,9 +300,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 			file.RemovePreTransform();
 			file.RemovePreTransformIsValid();
-
-			file.RemoveSource();
-			file.RemoveSourceIsValid();
 		}
 
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
