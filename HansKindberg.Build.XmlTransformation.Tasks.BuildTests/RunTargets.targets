@@ -114,7 +114,7 @@
 			<File Include="@(Content);@(EmbeddedResource);@(None);@(Resource)" />
 		</ItemGroup>
 		<CollectBuildTransformation
-			DestinationDirectory=""
+			DestinationDirectory="obj\XmlTransformation\transformed"
 			Files="@(File)"
 			TransformName="$(Configuration)"
 			ValidationMode="Warning"
