@@ -141,14 +141,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 				var xmlTransformationDecorator = this.XmlTransformationDecoratorFactory.Create(this.CreateXmlTransformationSettings(), this.ValidationLog);
 
-				xmlTransformationDecorator.GetDecoratedXmlFiles(this.Files);
-
-				this.FilesToTransform = xmlTransformationDecorator.GetDecoratedXmlFiles(this.Files).ToArray();
-
-				foreach(var taskItem in this.FilesToTransform)
-				{
-					taskItem.SetMetadata("MetadataNames", string.Join(";", taskItem.MetadataNames.Cast<string>().ToArray()));
-				}
+				this.FilesToTransform = xmlTransformationDecorator.GetDecoratedFiles(this.Files).ToArray();
 
 				this.TransferValidationLog();
 			}

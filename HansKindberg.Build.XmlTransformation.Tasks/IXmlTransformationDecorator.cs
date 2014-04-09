@@ -7,7 +7,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Methods
 
-		IEnumerable<ITransformableXmlFile> GetDecoratedXmlFiles(IEnumerable<ITaskItem> files);
+		void DecorateFile(ITaskItem file);
+		IEnumerable<ITaskItem> GetDecoratedFiles(IEnumerable<ITaskItem> files);
 
 		#endregion
 	}

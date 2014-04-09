@@ -1,13 +1,14 @@
-﻿namespace HansKindberg.Build.XmlTransformation.Tasks
+﻿using Microsoft.Build.Framework;
+
+namespace HansKindberg.Build.XmlTransformation.Tasks
 {
-	public interface IXmlTransformationMap
+	public interface IXmlTransformationMap : ITaskItem
 	{
 		#region Properties
 
-		IPotentialFile CommonBuildTransform { get; }
-		IPotentialFile CommonPublishTransform { get; }
-		IPotentialFile Identity { get; }
-		IPotentialFile Source { get; }
+		string CommonBuildTransform { get; }
+		string CommonPublishTransform { get; }
+		string Source { get; }
 
 		#endregion
 	}

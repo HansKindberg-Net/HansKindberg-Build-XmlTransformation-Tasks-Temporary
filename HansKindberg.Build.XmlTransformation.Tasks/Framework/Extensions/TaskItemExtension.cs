@@ -33,14 +33,6 @@ namespace HansKindberg.Build.Framework.Extensions // ReSharper restore CheckName
 			return taskItem.GetMetadata("FullPath") ?? string.Empty;
 		}
 
-		public static bool IsAppConfig(this ITaskItem taskItem)
-		{
-			if(taskItem == null)
-				throw new ArgumentNullException("taskItem");
-
-			return taskItem.ItemSpec.Equals("App.config", StringComparison.OrdinalIgnoreCase);
-		}
-
 		#endregion
 	}
 }

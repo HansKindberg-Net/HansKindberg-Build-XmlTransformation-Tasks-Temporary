@@ -25,7 +25,7 @@
 	</ItemDefinitionGroup>
 	<ItemGroup Condition="@(XmlTransformationMap) == ''">
 		<XmlTransformationMap Include="Web.config">
-			<Source>$(NuGetPackagesDirectory)SomePackage\Configuration\Web.Template.config</Source>
+			<Source>$(NuGetPackagesDirectory)SomePackage\Configuration\Web.X.Template.config</Source>
 		</XmlTransformationMap>
 		<XmlTransformationMap Include="Views\Web.config">
 			<Source></Source>
@@ -117,6 +117,7 @@
 			DestinationDirectory=""
 			Files="@(File)"
 			TransformName="$(Configuration)"
+			ValidationMode="Warning"
 			XmlFileExtensions="@(XmlFileExtension)"
 			XmlTransformationMaps="@(XmlTransformationMap)"
 		>
@@ -128,7 +129,7 @@
 		/>
 		<Message
 			Importance="high"
-			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - PreTransform = '%(FileToTransform.PreTransform)'%0a   - Source = '%(FileToTransform.Source)'%0a   - Transform = '%(FileToTransform.Transform)'"
+			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - Source = '%(FileToTransform.Source)'%0a   - Transform = '%(FileToTransform.Transform)'"
 		/>
 	</Target>
 	<Target Name="CheckIfProjectFilesExists">
