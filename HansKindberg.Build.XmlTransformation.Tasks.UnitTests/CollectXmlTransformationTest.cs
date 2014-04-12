@@ -7,9 +7,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.UnitTests
 	{
 		#region Methods
 
-		[TestMethod]
-		public void TestMethod1() {}
-
 		#endregion
 	}
 }

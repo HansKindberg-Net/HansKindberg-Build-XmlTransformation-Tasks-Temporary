@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -8,9 +9,12 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Fields
 
-		private readonly string _commonBuildTransform;
-		private readonly string _commonPublishTransform;
-		private readonly string _source;
+		public const string GeneralBuildTransformMetadataName = "GeneralBuildTransform";
+		public const string GeneralPublishTransformMetadataName = "GeneralPublishTransform";
+		public const string SourceMetadataName = "Source";
+		private readonly ITaskItem _generalBuildTransform;
+		private readonly ITaskItem _generalPublishTransform;
+		private readonly ITaskItem _source;
 		private readonly ITaskItem _taskItem;
 
 		#endregion
@@ -22,9 +26,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			if(taskItem == null)
 				throw new ArgumentNullException("taskItem");
 
-			this._commonBuildTransform = taskItem.GetMetadata("CommonBuildTransform");
-			this._commonPublishTransform = taskItem.GetMetadata("CommonPublishTransform");
-			this._source = taskItem.GetMetadata("Source");
+			this._generalBuildTransform = new TaskItem(taskItem.GetMetadata(GeneralBuildTransformMetadataName));
+			this._generalPublishTransform = new TaskItem(taskItem.GetMetadata(GeneralPublishTransformMetadataName));
+			this._source = new TaskItem(taskItem.GetMetadata(SourceMetadataName));
 			this._taskItem = taskItem;
 		}
 
@@ -32,14 +36,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Properties
 
-		public virtual string CommonBuildTransform
+		public virtual ITaskItem GeneralBuildTransform
 		{
-			get { return this._commonBuildTransform; }
+			get { return this._generalBuildTransform; }
 		}
 
-		public virtual string CommonPublishTransform
+		public virtual ITaskItem GeneralPublishTransform
 		{
-			get { return this._commonPublishTransform; }
+			get { return this._generalPublishTransform; }
 		}
 
 		public virtual string ItemSpec
@@ -58,7 +62,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			get { return this.TaskItem.MetadataNames; }
 		}
 
-		public virtual string Source
+		public virtual ITaskItem Source
 		{
 			get { return this._source; }
 		}

@@ -42,7 +42,11 @@ using System.Runtime.InteropServices;
 */
 
 [assembly: AssemblyInformationalVersion("1.0.0-alpha-0")]
+#pragma warning disable 436
+
 [assembly: AssemblyProduct(AssemblyInfo.AssemblyName)]
 [assembly: AssemblyTitle(AssemblyInfo.AssemblyName)]
+#pragma warning restore 436
+
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: ComVisible(false)]

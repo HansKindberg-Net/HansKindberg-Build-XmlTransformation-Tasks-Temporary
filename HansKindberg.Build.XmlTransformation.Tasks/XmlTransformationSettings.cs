@@ -9,7 +9,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		public virtual string AppConfigDestinationDirectory { get; set; }
 		public virtual string DestinationDirectory { get; set; }
-		public virtual bool SeparateSourceIsRequired { get; set; }
+		public virtual bool ExcludeFilesDependentUpon { get; set; }
+		public virtual bool ExcludeFilesDependentUponByFileName { get; set; }
 		public virtual TransformMode TransformMode { get; set; }
 		public virtual string TransformName { get; set; }
 		public virtual IEnumerable<string> XmlFileExtensions { get; set; }

@@ -6,9 +6,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Properties
 
-		string CommonBuildTransform { get; }
-		string CommonPublishTransform { get; }
-		string Source { get; }
+		ITaskItem GeneralBuildTransform { get; }
+		ITaskItem GeneralPublishTransform { get; }
+		ITaskItem Source { get; }
 
 		#endregion
 	}

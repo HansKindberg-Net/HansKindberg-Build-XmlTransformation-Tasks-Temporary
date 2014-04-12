@@ -3,11 +3,10 @@ using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
-	public interface IXmlTransformationDecorator
+	public interface IXmlTransformationDecorator : IXmlFileFilter
 	{
 		#region Methods
 
-		void DecorateFile(ITaskItem file);
 		IEnumerable<ITaskItem> GetDecoratedFiles(IEnumerable<ITaskItem> files);
 
 		#endregion

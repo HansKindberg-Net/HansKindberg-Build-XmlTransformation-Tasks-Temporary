@@ -6,7 +6,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 	{
 		#region Methods
 
-		IXmlTransformationMap GetXmlTransformationMap(ITaskItem xmlFile);
+		IXmlTransformationMap GetXmlTransformationMap(ITaskItem file);
 
 		#endregion
 	}

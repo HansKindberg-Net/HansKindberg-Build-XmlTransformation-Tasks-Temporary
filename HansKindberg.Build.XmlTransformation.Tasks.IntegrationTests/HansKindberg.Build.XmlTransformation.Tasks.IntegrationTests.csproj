@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6016FEA5-3EBF-4766-897E-89CC8F029159}</ProjectGuid>
+    <ProjectGuid>{0CB3DDEC-89C5-4DBC-A999-C471870C17D5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HansKindberg.Build.XmlTransformation.Tasks.UnitTests</RootNamespace>
-    <AssemblyName>HansKindberg.Build.XmlTransformation.Tasks.UnitTests</AssemblyName>
+    <RootNamespace>HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests</RootNamespace>
+    <AssemblyName>HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -55,7 +55,8 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.IO.Abstractions">
+    <Reference Include="System.IO.Abstractions, Version=1.4.0.83, Culture=neutral, PublicKeyToken=d480b5b72fb413da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.IO.Abstractions.1.4.0.83\lib\net35\System.IO.Abstractions.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -79,18 +80,48 @@
       <Link>Properties\Solution-AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
+    <Compile Include="CollectPublishTransformationTest.cs" />
+    <Compile Include="CollectBuildTransformationTest.cs" />
     <Compile Include="CollectXmlTransformationTest.cs" />
-    <Compile Include="PotentialFileTest.cs" />
+    <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\XmlFileExtensionHelper.cs" />
+    <Compile Include="Helpers\XmlTransformationMapHelper.cs" />
+    <Compile Include="Fakes\BuildEngineFake.cs" />
+    <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="..\Signing\HansKindberg.snk">
+      <Link>HansKindberg.snk</Link>
+    </None>
     <CodeAnalysisDictionary Include="CodeAnalysis\AssemblyDictionary.xml" />
     <CodeAnalysisDictionary Include="..\CodeAnalysis\SolutionDictionary.xml">
       <Link>CodeAnalysis\SolutionDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Compile Include="XmlTransformationDecoratorTest.cs" />
-    <None Include="..\Signing\HansKindberg.snk">
-      <Link>HansKindberg.snk</Link>
-    </None>
+    <Content Include="Web.config" />
     <None Include="packages.config" />
+    <None Include="Web.Build.config">
+      <DependentUpon>Web.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.Build.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Web.Production.config">
+      <DependentUpon>Web.Publish.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Web.Publish.config">
+      <DependentUpon>Web.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.Build.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Web.Test.config">
+      <DependentUpon>Web.Publish.config</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HansKindberg.Build.XmlTransformation.Tasks\HansKindberg.Build.XmlTransformation.Tasks.csproj">

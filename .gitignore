@@ -11,6 +11,7 @@ testresults/
 .nuget/NuGet.exe
 
 HansKindberg.Build.XmlTransformation.Tasks.BuildTests/Web.config
+HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests/Web.config
 
 !packages/repositories.config
 # To "negate" "packages/SomePackage/Configuration/Web.Template.config" we can not use "!packages/SomePackage/Configuration/Web.Template.config" we have to use "!packages/SomePackage/".

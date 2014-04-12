@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using HansKindberg.Build.Framework.Extensions;
@@ -17,6 +18,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		#region Fields
 
 		private readonly IFileSystem _fileSystem;
+		private readonly IEqualityComparer<ITaskItem> _taskItemComparer;
 		private readonly IValidationLog _validationLog;
 		private readonly IDictionary<string, IXmlTransformationMap> _xmlTransformationMapCache = new Dictionary<string, IXmlTransformationMap>(StringComparer.OrdinalIgnoreCase);
 		private readonly IXmlTransformationSettings _xmlTransformationSettings;
@@ -25,7 +27,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Constructors
 
-		public XmlTransformationDecorator(IFileSystem fileSystem, IXmlTransformationSettings xmlTransformationSettings, IValidationLog validationLog)
+		public XmlTransformationDecorator(IFileSystem fileSystem, IXmlTransformationSettings xmlTransformationSettings, IEqualityComparer<ITaskItem> taskItemComparer, IValidationLog validationLog)
 		{
 			if(fileSystem == null)
 				throw new ArgumentNullException("fileSystem");
@@ -77,10 +79,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			if(xmlTransformationSettings.XmlTransformationMaps == null)
 				throw new ArgumentNullException("xmlTransformationSettings", "The \"XmlTransformationMaps\" value can not be null.");
 
+			if(taskItemComparer == null)
+				throw new ArgumentNullException("taskItemComparer");
+
 			if(validationLog == null)
 				throw new ArgumentNullException("validationLog");
 
 			this._fileSystem = fileSystem;
+			this._taskItemComparer = taskItemComparer;
 			this._validationLog = validationLog;
 			this._xmlTransformationSettings = xmlTransformationSettings;
 		}
@@ -92,6 +98,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		protected internal virtual IFileSystem FileSystem
 		{
 			get { return this._fileSystem; }
+		}
+
+		protected internal virtual IEqualityComparer<ITaskItem> TaskItemComparer
+		{
+			get { return this._taskItemComparer; }
 		}
 
 		protected internal virtual IValidationLog ValidationLog
@@ -113,96 +124,115 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
-		public virtual void DecorateFile(ITaskItem file)
+		protected internal virtual IEnumerable<ITaskItem> GetDecoratedFiles(ITaskItem file)
 		{
 			if(file == null)
 				throw new ArgumentNullException("file");
 
-			if(!this.IsXmlFile(file))
-				return;
+			if(file.Objective() == null)
+				file.Objective(file.ItemSpec);
 
-			this.DecorateFileWithDefaultValues(file);
+			var validationResult = new ValidationResult();
+			var transformValidationResult = new ValidationResult();
+			var decoratedFiles = new List<ITaskItem>();
 
-			file.IsAppConfig(file.ItemSpec.Equals("App.config", StringComparison.OrdinalIgnoreCase));
+			var validatedObjective = this.GetValidatedObjective(file);
 
-			var fileIsValid = this.ValidateFileForDecoration(file);
+			if(!validatedObjective.IsValid)
+			{
+				validationResult.Exceptions.Add(validatedObjective.Exception);
+			}
+			else
+			{
+				var validatedGeneralTransform = this.GetValidatedGeneralTransform(file);
 
-			this.DecorateFileWithDestination(file);
-			file.DestinationIsValid(this.ValidateDestinationDecoration(file));
+				if(!validatedGeneralTransform.IsValid)
+					transformValidationResult.Exceptions.Add(validatedGeneralTransform.Exception);
 
-			var xmlTransformationMap = this.GetXmlTransformationMap(file);
+				var validatedTransform = this.GetValidatedTransform(file);
 
-			this.DecorateFileWithPreTransform(file, xmlTransformationMap);
-			file.PreTransformIsValid(this.ValidatePreTransformDecoration(file));
+				if((validatedGeneralTransform.IsValid && !string.IsNullOrEmpty(validatedGeneralTransform.Value)) || validatedTransform.IsValid)
+				{
+					var validatedDestination = this.GetValidatedDestination(file);
 
-			this.DecorateFileWithSource(file, xmlTransformationMap);
-			file.SourceIsValid(this.ValidateSourceDecoration(file));
+					if(!validatedDestination.IsValid)
+						validationResult.Exceptions.Add(validatedDestination.Exception);
 
-			this.DecorateFileWithTransform(file);
-			file.TransformIsValid(this.ValidateTransformDecoration(file));
+					var validatedSource = this.GetValidatedSource(file);
 
-			file.IsValid(fileIsValid && file.DestinationIsValid() && file.SourceIsValid() && (file.PreTransformIsValid() || file.TransformIsValid()));
-		}
+					if(!validatedSource.IsValid)
+						validationResult.Exceptions.Add(validatedSource.Exception);
 
-		protected internal virtual void DecorateFileWithDefaultValues(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+					if(validatedDestination.IsValid && validatedSource.IsValid)
+					{
+						var source = validatedSource.Value;
 
-			file.Destination(string.Empty);
-			file.IsAppConfig(false);
-			file.IsValid(false);
-			file.OriginalItemSpecification(file.ItemSpec);
-			file.PreTransform(string.Empty);
-			file.PreTransformIsValid(false);
-			file.Source(string.Empty);
-			file.SourceIsValid(false);
-			file.Transform(string.Empty);
-			file.TransformIsValid(false);
-		}
+						if(string.IsNullOrEmpty(source))
+							source = file.ItemSpec;
 
-		protected internal virtual void DecorateFileWithDestination(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+						var destinationValidation = this.ValidateDestination(file, validatedDestination.Value, source);
 
-			string destinationDirectory = (!file.IsAppConfig() ? this.XmlTransformationSettings.DestinationDirectory : this.XmlTransformationSettings.AppConfigDestinationDirectory) ?? string.Empty;
+						if(!destinationValidation.IsValid)
+						{
+							validationResult.AddExceptions(destinationValidation.Exceptions);
+						}
+						else
+						{
+							if(!source.Equals(file.ItemSpec))
+								file.ItemSpec = source;
 
-			var destinationRelativePath = file.DestinationRelativePath();
+							var generalTransformIsValid = validatedGeneralTransform.IsValid && !string.IsNullOrEmpty(validatedGeneralTransform.Value);
 
-			if(string.IsNullOrEmpty(destinationRelativePath))
-				destinationRelativePath = file.ToString();
+							if(generalTransformIsValid)
+							{
+								var generalTransformFile = !validatedTransform.IsValid ? file : new TaskItem(file);
 
-			file.Destination(this.FileSystem.Path.Combine(destinationDirectory, destinationRelativePath));
-		}
+								generalTransformFile.Destination(validatedDestination.Value);
+								generalTransformFile.Transform(validatedGeneralTransform.Value);
 
-		protected internal virtual void DecorateFileWithPreTransform(ITaskItem file, IXmlTransformationMap xmlTransformationMap)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+								decoratedFiles.Add(generalTransformFile);
 
-			if(xmlTransformationMap != null)
-				file.PreTransform((this.XmlTransformationSettings.TransformMode == TransformMode.Build ? xmlTransformationMap.CommonBuildTransform : xmlTransformationMap.CommonPublishTransform) ?? string.Empty);
-		}
+								if(validatedTransform.IsValid)
+								{
+									file.ItemSpec = validatedDestination.Value;
 
-		protected internal virtual void DecorateFileWithSource(ITaskItem file, IXmlTransformationMap xmlTransformationMap)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+									if(!this.FileSystem.File.Exists(file.ItemSpec))
+									{
+										var objective = file.Objective();
 
-			if(xmlTransformationMap != null)
-				file.Source(xmlTransformationMap.Source ?? string.Empty);
+										var validatedObjectiveSource = this.GetValidatedSource(objective);
 
-			if(string.IsNullOrEmpty(file.Source()))
-				file.Source(file.ToString());
-		}
+										var objectiveSource = validatedObjectiveSource.Value;
 
-		protected internal virtual void DecorateFileWithTransform(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+										if(string.IsNullOrEmpty(objectiveSource))
+											objectiveSource = objective.ItemSpec;
 
-			file.Transform(this.FileSystem.Path.GetFileNameWithoutExtension(file.ToString()) + "." + (this.XmlTransformationSettings.TransformName ?? string.Empty) + file.Extension());
+										var directory = this.FileSystem.FileInfo.FromFileName(file.ItemSpec).Directory;
+
+										if(!directory.Exists)
+											directory.Create();
+
+										this.FileSystem.File.Copy(objectiveSource, file.ItemSpec);
+									}
+								}
+							}
+
+							if(validatedTransform.IsValid)
+							{
+								file.Destination(validatedDestination.Value);
+								file.Transform(validatedTransform.Value);
+
+								decoratedFiles.Add(file);
+							}
+						}
+					}
+				}
+			}
+
+			this.Log(transformValidationResult);
+			this.Log(file, validationResult);
+
+			return decoratedFiles.ToArray();
 		}
 
 		public virtual IEnumerable<ITaskItem> GetDecoratedFiles(IEnumerable<ITaskItem> files)
@@ -210,55 +240,213 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			if(files == null)
 				throw new ArgumentNullException("files");
 
-			foreach(var file in files)
+			// ReSharper disable LoopCanBeConvertedToQuery
+			foreach(var file in this.GetDistinctFilesForDecoration(files))
 			{
-				this.DecorateFile(file);
-
-				if(file.IsValid())
+				foreach(var decoratedFile in this.GetDecoratedFiles(file))
 				{
-					if(file.PreTransformIsValid())
-					{
-						var filePreTransform = new TaskItem(file);
-
-						filePreTransform.ItemSpec = filePreTransform.Source();
-
-						filePreTransform.Transform(filePreTransform.PreTransform());
-						filePreTransform.TransformIsValid(filePreTransform.PreTransformIsValid());
-
-						this.RemoveTemporaryDecorations(filePreTransform);
-
-						yield return filePreTransform;
-					}
-
-					if(file.TransformIsValid())
-					{
-						file.ItemSpec = file.PreTransformIsValid() ? file.Destination() : file.Source();
-
-						this.RemoveTemporaryDecorations(file);
-
-						yield return file;
-					}
+					yield return decoratedFile;
 				}
 			}
+			// ReSharper restore LoopCanBeConvertedToQuery
 		}
 
-		public virtual IXmlTransformationMap GetXmlTransformationMap(ITaskItem xmlFile)
+		protected internal virtual IEnumerable<ITaskItem> GetDistinctFilesForDecoration(IEnumerable<ITaskItem> files)
 		{
-			if(xmlFile == null)
-				throw new ArgumentNullException("xmlFile");
+			if(files == null)
+				throw new ArgumentNullException("files");
+
+			var filesCopy = files.ToArray();
+			var allFiles = filesCopy.ToArray();
+
+			var includedXmlFiles = new List<ITaskItem>();
+
+			// ReSharper disable LoopCanBeConvertedToQuery
+			foreach(var file in filesCopy)
+			{
+				if(!this.IsXmlFile(file))
+					continue;
+
+				if(this.XmlTransformationSettings.ExcludeFilesDependentUpon && this.IsDependentUpon(file))
+					continue;
+
+				if(this.XmlTransformationSettings.ExcludeFilesDependentUponByFileName && this.IsDependentUponByFileName(file, allFiles))
+					continue;
+
+				includedXmlFiles.Add(file);
+			}
+			// ReSharper restore LoopCanBeConvertedToQuery
+
+			var includedObjectives = includedXmlFiles.Where(file => file.Objective() != null).Select(file => file.Objective()).Distinct(this.TaskItemComparer);
+
+			var distinctFilesForDecoration = includedXmlFiles.Where(file => !includedObjectives.Contains(file, this.TaskItemComparer)).Distinct(this.TaskItemComparer);
+
+			return distinctFilesForDecoration.ToArray();
+		}
+
+		protected internal virtual string GetFullPathWithoutExtension(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			return this.FileSystem.Path.Combine(this.FileSystem.Path.GetDirectoryName(file.FullPath()), this.FileSystem.Path.GetFileNameWithoutExtension(file.FullPath()));
+		}
+
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+		protected internal virtual IValidatable<string> GetValidatedDestination(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			var validatedDestination = new Validatable<string>();
+
+			bool isAppConfig = file.IsAppConfig();
+
+			string destinationDirectory = (!isAppConfig ? this.XmlTransformationSettings.DestinationDirectory : this.XmlTransformationSettings.AppConfigDestinationDirectory) ?? string.Empty;
+
+			var destinationRelativePath = file.DestinationRelativePath();
+
+			if(string.IsNullOrEmpty(destinationRelativePath))
+				destinationRelativePath = file.Objective().ItemSpec;
+
+			var destination = this.FileSystem.Path.Combine(destinationDirectory, destinationRelativePath);
+			validatedDestination.Value = destination;
+
+			try
+			{
+				this.FileSystem.FileInfo.FromFileName(destination);
+			}
+			catch
+			{
+				validatedDestination.Exception = new NotSupportedException(string.Format(CultureInfo.InvariantCulture, "The destination \"{0}\" for file \"{1}\" is invalid.", destination, file));
+			}
+
+			return validatedDestination;
+		}
+
+		protected internal virtual IValidatable<string> GetValidatedGeneralTransform(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			var validatedGeneralTransform = new Validatable<string>();
+
+			var objective = file.Objective();
+
+			var xmlTransformationMap = this.GetXmlTransformationMap(objective);
+
+			if(xmlTransformationMap == null)
+				return validatedGeneralTransform;
+
+			var generalTransform = this.XmlTransformationSettings.TransformMode == TransformMode.Build ? xmlTransformationMap.GeneralBuildTransform : xmlTransformationMap.GeneralPublishTransform;
+
+			if(generalTransform == null)
+				return validatedGeneralTransform;
+
+			if(string.IsNullOrEmpty(generalTransform.ItemSpec))
+				return validatedGeneralTransform;
+
+			validatedGeneralTransform.Value = generalTransform.ItemSpec;
+
+			if(!this.FileSystem.File.Exists(generalTransform.ItemSpec))
+				validatedGeneralTransform.Exception = new FileNotFoundException(string.Format(CultureInfo.InvariantCulture, "The general transform file \"{0}\" for file \"{1}\" does not exist. {2}", generalTransform, file, this.GetXmlTransformationMapInformation(objective)), generalTransform.ItemSpec);
+
+			return validatedGeneralTransform;
+		}
+
+		protected internal virtual IValidatable<ITaskItem> GetValidatedObjective(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			const string exceptionMessageSuffix = "This is not supposed to happen. There is a bug somewhere.";
+
+			var objective = file.Objective();
+
+			var validatedObjective = new Validatable<ITaskItem>
+			{
+				Value = objective
+			};
+
+			if(objective == null)
+				validatedObjective.Exception = new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "The objective is null. {0}", exceptionMessageSuffix));
+			else if(string.IsNullOrEmpty(objective.ItemSpec))
+				validatedObjective.Exception = new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "The objective is empty. {0}", exceptionMessageSuffix));
+
+			return validatedObjective;
+		}
+
+		protected internal virtual IValidatable<string> GetValidatedSource(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			var validatedSource = new Validatable<string>();
+
+			var xmlTransformationMap = this.GetXmlTransformationMap(file);
+
+			if(xmlTransformationMap == null)
+				return validatedSource;
+
+			var source = xmlTransformationMap.Source;
+
+			if(source == null)
+				return validatedSource;
+
+			if(string.IsNullOrEmpty(source.ItemSpec))
+				return validatedSource;
+
+			validatedSource.Value = source.ItemSpec;
+
+			if(!this.FileSystem.File.Exists(source.ItemSpec))
+				validatedSource.Exception = new FileNotFoundException(string.Format(CultureInfo.InvariantCulture, "The source \"{0}\" for file \"{1}\" does not exist. {2}", source, file, this.GetXmlTransformationMapInformation(file)), source.ItemSpec);
+
+			return validatedSource;
+		}
+
+		protected internal virtual IValidatable<string> GetValidatedTransform(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			var validatedTransform = new Validatable<string>();
+
+			var objective = file.Objective();
+
+			var transform = this.FileSystem.Path.GetFileNameWithoutExtension(objective.ItemSpec) + "." + (this.XmlTransformationSettings.TransformName ?? string.Empty) + objective.Extension();
+			validatedTransform.Value = transform;
+
+			if(!this.FileSystem.File.Exists(transform))
+				validatedTransform.Exception = new FileNotFoundException(string.Format(CultureInfo.InvariantCulture, "The transform file \"{0}\" for file \"{1}\" does not exist.", transform, file), transform);
+
+			return validatedTransform;
+		}
+
+		public virtual IEnumerable<ITaskItem> GetXmlFiles(IEnumerable<ITaskItem> files)
+		{
+			if(files == null)
+				throw new ArgumentNullException("files");
+
+			return files.Where(this.IsXmlFile);
+		}
+
+		public virtual IXmlTransformationMap GetXmlTransformationMap(ITaskItem file)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
 
 			IXmlTransformationMap xmlTransformationMap;
 
-			if(!this.XmlTransformationMapCache.TryGetValue(xmlFile.ToString(), out xmlTransformationMap))
+			if(!this.XmlTransformationMapCache.TryGetValue(file.ItemSpec, out xmlTransformationMap))
 			{
-				var xmlFileFullPath = xmlFile.GetMetadata("FullPath") ?? string.Empty;
+				var objectiveFullPath = file.FullPath();
 
 				var xmlTransformationMapTaskItems = new List<ITaskItem>();
 
-				xmlTransformationMapTaskItems.AddRange(this.XmlTransformationSettings.XmlTransformationMaps.Where(taskItem => xmlFile.ItemSpec.Equals(taskItem.ItemSpec, StringComparison.OrdinalIgnoreCase) || xmlFileFullPath.Equals(taskItem.ItemSpec, StringComparison.OrdinalIgnoreCase)));
+				xmlTransformationMapTaskItems.AddRange(this.XmlTransformationSettings.XmlTransformationMaps.Where(taskItem => file.ItemSpec.Equals(taskItem.ItemSpec, StringComparison.OrdinalIgnoreCase) || objectiveFullPath.Equals(taskItem.ItemSpec, StringComparison.OrdinalIgnoreCase)));
 
 				if(xmlTransformationMapTaskItems.Count > 1)
-					this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The xml-file \"{0}\" has multiple XmlTransformationMaps. The first will be used.", xmlFile), xmlFile);
+					this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" has multiple XmlTransformationMaps. The first will be used.", file), file);
 
 				var xmlTransformationMapTaskItem = xmlTransformationMapTaskItems.FirstOrDefault();
 
@@ -269,10 +457,57 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 					xmlTransformationMap = newXmlTransformationMap;
 				}
 
-				this.XmlTransformationMapCache.Add(xmlFile.ToString(), xmlTransformationMap);
+				this.XmlTransformationMapCache.Add(file.ItemSpec, xmlTransformationMap);
 			}
 
 			return xmlTransformationMap;
+		}
+
+		protected internal virtual string GetXmlTransformationMapInformation(ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			return string.Format(CultureInfo.InvariantCulture, "See the \"XmlTransformationMap\"-itemgroup with identity \"{0}\".", taskItem);
+		}
+
+		protected internal virtual bool IsDependentUpon(ITaskItem file)
+		{
+			if(file == null)
+				return false;
+
+			return !string.IsNullOrEmpty(file.DependentUpon());
+		}
+
+		protected internal virtual bool IsDependentUponByFileName(ITaskItem file, IEnumerable<ITaskItem> files)
+		{
+			if(file == null)
+				return false;
+
+			if(files == null)
+				return false;
+
+			var fileFullPathWithoutExtension = this.GetFullPathWithoutExtension(file);
+
+			// ReSharper disable LoopCanBeConvertedToQuery
+			foreach(var fileItem in files)
+			{
+				if(!file.Extension().Equals(fileItem.Extension(), StringComparison.OrdinalIgnoreCase))
+					continue;
+
+				var fileItemFullPathWithoutExtension = this.GetFullPathWithoutExtension(fileItem);
+
+				if(fileFullPathWithoutExtension.StartsWith(fileItemFullPathWithoutExtension, StringComparison.OrdinalIgnoreCase) && fileFullPathWithoutExtension.Length > fileItemFullPathWithoutExtension.Length)
+				{
+					var reminder = fileFullPathWithoutExtension.Substring(fileItemFullPathWithoutExtension.Length);
+
+					if(reminder.StartsWith(".", StringComparison.OrdinalIgnoreCase))
+						return true;
+				}
+			}
+			// ReSharper restore LoopCanBeConvertedToQuery
+
+			return false;
 		}
 
 		protected internal virtual bool IsXmlFile(ITaskItem file)
@@ -285,143 +520,63 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			return extension != null && this.XmlTransformationSettings.XmlFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
 		}
 
+		protected internal virtual void Log(IValidationResult validationResult)
+		{
+			if (validationResult == null)
+				throw new ArgumentNullException("validationResult");
+			
+			foreach (var exception in validationResult.Exceptions)
+			{
+				this.ValidationLog.LogWarning(exception.Message);
+			}
+		}
+
+		protected internal virtual void Log(ITaskItem file, IValidationResult validationResult)
+		{
+			if(file == null)
+				throw new ArgumentNullException("file");
+
+			if(validationResult == null)
+				throw new ArgumentNullException("validationResult");
+
+			if(validationResult.IsValid)
+				return;
+
+			var log = new List<string>
+			{
+				string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" will not be transformed:", file)
+			};
+
+			for(int i = 0; i < validationResult.Exceptions.Count(); i++)
+			{
+				log.Add(string.Format(CultureInfo.InvariantCulture, "{0}. {1}", i + 1, validationResult.Exceptions.ElementAt(i).Message));
+			}
+
+			this.ValidationLog.LogWarning(string.Join(" ", log.ToArray()));
+		}
+
 		protected internal virtual void LogXmlTransformationMapWarning(string information, ITaskItem taskItem)
 		{
 			if(taskItem == null)
 				throw new ArgumentNullException("taskItem");
 
-			this.ValidationLog.LogWarning(information + string.Format(CultureInfo.InvariantCulture, " See the \"XmlTransformationMap\"-itemgroup with identity \"{0}\".", taskItem));
+			this.ValidationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "{0} {1}", information, this.GetXmlTransformationMapInformation(taskItem)));
 		}
 
-		protected internal virtual void RemoveTemporaryDecorations(ITaskItem file)
+		protected internal virtual IValidationResult ValidateDestination(ITaskItem file, string destination, string source)
 		{
 			if(file == null)
 				throw new ArgumentNullException("file");
 
-			file.RemovePreTransform();
-			file.RemovePreTransformIsValid();
-		}
+			var validationResult = new ValidationResult();
 
-		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-		protected internal virtual bool ValidateDestinationDecoration(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
+			var destinationFullPath = this.FileSystem.Path.GetFullPath(destination);
+			var sourceFullPath = this.FileSystem.Path.GetFullPath(source);
 
-			if(string.IsNullOrEmpty(file.Destination()))
-			{
-				this.ValidationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "The destination for file \"{0}\" is empty.", file));
-				return false;
-			}
+			if(destinationFullPath.Equals(sourceFullPath, StringComparison.OrdinalIgnoreCase))
+				validationResult.Exceptions.Add(new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "The destination for file \"{0}\" can not be the same as the source \"{1}\".", file, source)));
 
-			try
-			{
-				this.FileSystem.FileInfo.FromFileName(file.Destination());
-			}
-			catch
-			{
-				this.ValidationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "The destination \"{0}\" for file \"{1}\" is invalid.", file.Destination(), file));
-				return false;
-			}
-
-			return true;
-		}
-
-		protected internal virtual bool ValidateFileForDecoration(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
-
-			if(this.FileSystem.Path.IsPathRooted(file.ToString()))
-			{
-				this.ValidationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" will not be transformed because it has an absolute path.", file));
-				return false;
-			}
-
-			return true;
-		}
-
-		protected internal virtual bool ValidatePreTransformDecoration(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
-
-			if(string.IsNullOrEmpty(file.PreTransform()))
-				return false;
-
-			if(!this.FileSystem.File.Exists(file.PreTransform()))
-			{
-				this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The pre-transform file \"{0}\" for file \"{1}\" does not exist.", file.PreTransform(), file), file);
-				return false;
-			}
-
-			return true;
-		}
-
-		protected internal virtual bool ValidateSourceDecoration(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
-
-			if(!this.FileSystem.File.Exists(file.Source()))
-			{
-				this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The source \"{0}\" for file \"{1}\" does not exist.", file.Source(), file), file);
-				return false;
-			}
-
-			if(this.XmlTransformationSettings.SeparateSourceIsRequired)
-			{
-				// If file and source have a path to the same file.
-				if(file.ToString().Equals(file.Source(), StringComparison.OrdinalIgnoreCase) || file.FullPath().Equals(file.Source(), StringComparison.OrdinalIgnoreCase))
-				{
-					this.ValidationLog.LogWarning(string.Format(CultureInfo.InvariantCulture, "A separate source is required. The file \"{0}\" with source \"{1}\" will not be transformed because the paths are the same.", file, file.Source()));
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		protected internal virtual bool ValidateTransformDecoration(ITaskItem file)
-		{
-			if(file == null)
-				throw new ArgumentNullException("file");
-
-			if(string.IsNullOrEmpty(file.Transform()))
-				return false;
-
-			if(!this.FileSystem.File.Exists(file.Transform()))
-				return false;
-
-			return true;
-		}
-
-		protected internal virtual bool ValidateXmlTransformationMap(IXmlTransformationMap xmlTransformationMap)
-		{
-			if(xmlTransformationMap == null)
-				throw new ArgumentNullException("xmlTransformationMap");
-
-			bool validate = true;
-
-			if(!string.IsNullOrEmpty(xmlTransformationMap.CommonBuildTransform) && !this.FileSystem.File.Exists(xmlTransformationMap.CommonBuildTransform))
-			{
-				validate = false;
-				this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The \"{0}\" \"{1}\" does not exist.", "CommonBuildTransform", xmlTransformationMap.CommonBuildTransform), xmlTransformationMap);
-			}
-
-			if(!string.IsNullOrEmpty(xmlTransformationMap.CommonPublishTransform) && !this.FileSystem.File.Exists(xmlTransformationMap.CommonPublishTransform))
-			{
-				validate = false;
-				this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The \"{0}\" \"{1}\" does not exist.", "CommonPublishTransform", xmlTransformationMap.CommonPublishTransform), xmlTransformationMap);
-			}
-
-			if(!string.IsNullOrEmpty(xmlTransformationMap.Source) && !this.FileSystem.File.Exists(xmlTransformationMap.Source))
-			{
-				validate = false;
-				this.LogXmlTransformationMapWarning(string.Format(CultureInfo.InvariantCulture, "The \"{0}\" \"{1}\" does not exist.", "Source", xmlTransformationMap.Source), xmlTransformationMap);
-			}
-
-			return validate;
+			return validationResult;
 		}
 
 		#endregion

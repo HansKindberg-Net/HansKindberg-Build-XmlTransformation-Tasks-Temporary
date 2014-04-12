@@ -2,8 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<NuGetPackagesDirectory Condition="$(NuGetPackagesDirectory) == ''">$(SolutionDir)packages\</NuGetPackagesDirectory>
-		<XmlTransformationCommonBuildTransformName Condition="$(XmlTransformationCommonBuildTransformName) == ''">Build</XmlTransformationCommonBuildTransformName>
-		<XmlTransformationCommonPublishTransformName Condition="$(XmlTransformationCommonPublishTransformName) == ''">Publish</XmlTransformationCommonPublishTransformName>
+		<XmlTransformationGeneralBuildTransformName Condition="$(XmlTransformationGeneralBuildTransformName) == ''">Build</XmlTransformationGeneralBuildTransformName>
+		<XmlTransformationGeneralPublishTransformName Condition="$(XmlTransformationGeneralPublishTransformName) == ''">Publish</XmlTransformationGeneralPublishTransformName>
 		<XmlTransformationSourceName Condition="$(XmlTransformationSourceName) == ''">Template</XmlTransformationSourceName>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -17,14 +17,17 @@
 	</ItemGroup>
 	<ItemDefinitionGroup>
 		<XmlTransformationMap>
-			<CommonBuildTransform>%(RelativeDir)%(Filename).$(XmlTransformationCommonBuildTransformName)%(Extension)</CommonBuildTransform>
-			<CommonPublishTransform>%(RelativeDir)%(Filename).$(XmlTransformationCommonPublishTransformName)%(Extension)</CommonPublishTransform>
+			<GeneralBuildTransform>%(RelativeDir)%(Filename).$(XmlTransformationGeneralBuildTransformName)%(Extension)</GeneralBuildTransform>
+			<GeneralPublishTransform>%(RelativeDir)%(Filename).$(XmlTransformationGeneralPublishTransformName)%(Extension)</GeneralPublishTransform>
 			<!-- If the "Source" is not a project relative path it must be an absolute path. -->
 			<Source>%(RelativeDir)%(Filename).$(XmlTransformationSourceName)%(Extension)</Source>
 		</XmlTransformationMap>
 	</ItemDefinitionGroup>
 	<ItemGroup Condition="@(XmlTransformationMap) == ''">
 		<XmlTransformationMap Include="Web.config">
+
+			<!--<GeneralBuildTransform>%(RelativeDir)%(Filename).JabbaDabba%(Extension)</GeneralBuildTransform>-->
+
 			<Source>$(NuGetPackagesDirectory)SomePackage\Configuration\Web.Template.config</Source>
 		</XmlTransformationMap>
 		<XmlTransformationMap Include="Views\Web.config">
@@ -34,18 +37,18 @@
 		<XmlTransformationMap Include="Does\Not\Exist\Some.xml" />
 		<!--
 		<XmlTransformationMap Include="Web.config">
-			<CommonBuildTransform>Web.Build.config</CommonBuildTransform>
-			<CommonPublishTransform>Web.Publish.config</CommonPublishTransform>
+			<GeneralBuildTransform>Web.Build.config</GeneralBuildTransform>
+			<GeneralPublishTransform>Web.Publish.config</GeneralPublishTransform>
 			<Source>Web.Template.config</Source>
 		</XmlTransformationMap>
 		<XmlTransformationMap Include="Views\Web.config">
-			<CommonBuildTransform>Web.Build.config</CommonBuildTransform>
-			<CommonPublishTransform>Views\Web.Publish.config</CommonPublishTransform>
+			<GeneralBuildTransform>Web.Build.config</GeneralBuildTransform>
+			<GeneralPublishTransform>Views\Web.Publish.config</GeneralPublishTransform>
 			<Source></Source>
 		</XmlTransformationMap>
 		<XmlTransformationMap Include="Test\Web.config">
-			<CommonBuildTransform>Test\Web.Build.config</CommonBuildTransform>
-			<CommonPublishTransform>Test\Web.Publish.config</CommonPublishTransform>
+			<GeneralBuildTransform>Test\Web.Build.config</GeneralBuildTransform>
+			<GeneralPublishTransform>Test\Web.Publish.config</GeneralPublishTransform>
 			<Source>Test\Web.Template.config</Source>
 		</XmlTransformationMap>
 		-->
@@ -115,6 +118,7 @@
 		</ItemGroup>
 		<CollectBuildTransformation
 			DestinationDirectory="obj\XmlTransformation\transformed"
+			ExcludeFilesDependentUpon="true"
 			Files="@(File)"
 			TransformName="$(Configuration)"
 			ValidationMode="Warning"
@@ -129,7 +133,7 @@
 		/>
 		<Message
 			Importance="high"
-			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - Source = '%(FileToTransform.Source)'%0a   - Transform = '%(FileToTransform.Transform)'"
+			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - Objective = '%(FileToTransform.Objective)'%0a   - Transform = '%(FileToTransform.Transform)'"
 		/>
 	</Target>
 	<Target Name="CheckIfProjectFilesExists">

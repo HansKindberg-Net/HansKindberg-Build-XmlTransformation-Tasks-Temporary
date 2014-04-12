@@ -9,12 +9,20 @@ namespace HansKindberg.Build.Framework.Extensions // ReSharper restore CheckName
 	{
 		#region Methods
 
+		public static string DependentUpon(this ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			return taskItem.GetMetadata("DependentUpon");
+		}
+
 		public static string DestinationRelativePath(this ITaskItem taskItem)
 		{
 			if(taskItem == null)
 				throw new ArgumentNullException("taskItem");
 
-			return taskItem.GetMetadata("DestinationRelativePath") ?? string.Empty;
+			return taskItem.GetMetadata("DestinationRelativePath");
 		}
 
 		public static string Extension(this ITaskItem taskItem)
@@ -22,7 +30,7 @@ namespace HansKindberg.Build.Framework.Extensions // ReSharper restore CheckName
 			if(taskItem == null)
 				throw new ArgumentNullException("taskItem");
 
-			return taskItem.GetMetadata("Extension") ?? string.Empty;
+			return taskItem.GetMetadata("Extension");
 		}
 
 		public static string FullPath(this ITaskItem taskItem)
@@ -30,7 +38,7 @@ namespace HansKindberg.Build.Framework.Extensions // ReSharper restore CheckName
 			if(taskItem == null)
 				throw new ArgumentNullException("taskItem");
 
-			return taskItem.GetMetadata("FullPath") ?? string.Empty;
+			return taskItem.GetMetadata("FullPath");
 		}
 
 		#endregion

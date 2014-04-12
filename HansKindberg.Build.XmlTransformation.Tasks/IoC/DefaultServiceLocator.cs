@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using HansKindberg.Build.XmlTransformation.Tasks.Framework;
+using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 {
@@ -9,17 +11,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 	{
 		#region Fields
 
-		private readonly IFileSystem _fileSystem;
+		private readonly IFileSystem _fileSystem = new FileSystem();
+		private readonly IEqualityComparer<ITaskItem> _taskItemComparer = new TaskItemComparer();
 		private IXmlTransformationDecoratorFactory _xmlTransformationDecoratorFactory;
-
-		#endregion
-
-		#region Constructors
-
-		public DefaultServiceLocator()
-		{
-			this._fileSystem = new FileSystem();
-		}
 
 		#endregion
 
@@ -30,9 +24,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._fileSystem; }
 		}
 
+		protected internal virtual IEqualityComparer<ITaskItem> TaskItemComparer
+		{
+			get { return this._taskItemComparer; }
+		}
+
 		protected internal virtual IXmlTransformationDecoratorFactory XmlTransformationDecoratorFactory
 		{
-			get { return this._xmlTransformationDecoratorFactory ?? (this._xmlTransformationDecoratorFactory = new XmlTransformationDecoratorFactory(this.FileSystem)); }
+			get { return this._xmlTransformationDecoratorFactory ?? (this._xmlTransformationDecoratorFactory = new XmlTransformationDecoratorFactory(this.FileSystem, this.TaskItemComparer)); }
 		}
 
 		#endregion
@@ -43,6 +42,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 		{
 			if(serviceType == null)
 				throw new ArgumentNullException("serviceType");
+
+			if (serviceType == typeof(IEqualityComparer<ITaskItem>))
+				return this.TaskItemComparer;
 
 			if(serviceType == typeof(IFileSystem))
 				return this.FileSystem;

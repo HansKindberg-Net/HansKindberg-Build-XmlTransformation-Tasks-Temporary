@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
+using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -16,6 +18,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		private readonly IFileSystem _fileSystem;
 		private ITaskItem[] _files;
 		private ITaskItem[] _filesToTransform;
+		private MessageImportance _logImportance = MessageImportance.Normal;
 		private string _transformName;
 		private readonly IValidationLog _validationLog = new ValidationLog();
 		private ValidationMode _validationMode = Validation.ValidationMode.Warning;
@@ -45,6 +48,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		public virtual string AppConfigDestinationDirectory { get; set; }
 		public virtual string DestinationDirectory { get; set; }
+		public virtual bool ExcludeFilesDependentUpon { get; set; }
+		public virtual bool ExcludeFilesDependentUponByFileName { get; set; }
 
 		protected internal virtual IFileSystem FileSystem
 		{
@@ -65,7 +70,18 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			protected internal set { this._filesToTransform = value; }
 		}
 
-		public virtual bool SeparateSourceIsRequired { get; set; }
+		public virtual string LogImportance
+		{
+			get { return this.LogImportanceInternal.ToString(); }
+			set { this.LogImportanceInternal = (MessageImportance) Enum.Parse(typeof(MessageImportance), value, true); }
+		}
+
+		protected internal virtual MessageImportance LogImportanceInternal
+		{
+			get { return this._logImportance; }
+			set { this._logImportance = value; }
+		}
+
 		protected internal abstract TransformMode TransformMode { get; }
 
 		[Required]
@@ -120,7 +136,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			{
 				AppConfigDestinationDirectory = this.AppConfigDestinationDirectory,
 				DestinationDirectory = this.DestinationDirectory,
-				SeparateSourceIsRequired = this.SeparateSourceIsRequired,
+				ExcludeFilesDependentUpon = this.ExcludeFilesDependentUpon,
+				ExcludeFilesDependentUponByFileName = this.ExcludeFilesDependentUponByFileName,
 				TransformMode = this.TransformMode,
 				TransformName = this.TransformName,
 				XmlFileExtensions = this.XmlFileExtensions.Select(xmlFileExtension => xmlFileExtension.ItemSpec).ToArray(),
@@ -139,11 +156,15 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				if(!this.Files.Any())
 					return true;
 
-				var xmlTransformationDecorator = this.XmlTransformationDecoratorFactory.Create(this.CreateXmlTransformationSettings(), this.ValidationLog);
+				var xmlTransformationSettings = this.CreateXmlTransformationSettings();
+
+				var xmlTransformationDecorator = this.XmlTransformationDecoratorFactory.Create(xmlTransformationSettings, this.ValidationLog);
 
 				this.FilesToTransform = xmlTransformationDecorator.GetDecoratedFiles(this.Files).ToArray();
 
 				this.TransferValidationLog();
+
+				this.LogInformation(xmlTransformationSettings, xmlTransformationDecorator);
 			}
 			catch(Exception exception)
 			{
@@ -154,6 +175,98 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			var thereAreValidationErrors = this.ValidationLog.ValidationMessages.All(validationMessage => !(validationMessage is ValidationError));
 
 			return !(thereAreValidationErrors && this.ValidationModeInternal == Validation.ValidationMode.Error);
+		}
+
+		protected internal virtual string GetUnderliningForText(char underliningCharacter, string text)
+		{
+			var underlining = string.Empty;
+
+			if(string.IsNullOrEmpty(text))
+				return underlining;
+
+			for(int i = 0; i < text.Length; i++)
+			{
+				underlining += underliningCharacter.ToString(CultureInfo.InvariantCulture);
+			}
+
+			return underlining;
+		}
+
+		[SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "HansKindberg.Build.XmlTransformation.Tasks.CollectXmlTransformation.GetUnderliningForText(System.Char,System.String)")]
+		protected internal virtual void LogInformation(IXmlTransformationSettings xmlTransformationSettings, IXmlFileFilter xmlFileFilter)
+		{
+			if(xmlFileFilter == null)
+				throw new ArgumentNullException("xmlFileFilter");
+
+			var log = new List<string>
+			{
+				string.Empty
+			};
+
+			var heading = string.Format(CultureInfo.InvariantCulture, "Information from \"{0}\"", this.GetType().FullName);
+			log.Add(heading);
+			log.Add(this.GetUnderliningForText('=', heading));
+			log.Add(string.Empty);
+			const string settings = "Settings";
+			log.Add(settings);
+			log.Add(this.GetUnderliningForText('-', settings));
+			if(xmlTransformationSettings != null)
+			{
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - AppConfigDestinationDirectory = '{0}'", xmlTransformationSettings.AppConfigDestinationDirectory));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - DestinationDirectory = '{0}'", xmlTransformationSettings.DestinationDirectory));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - ExcludeFilesDependentUpon = '{0}'", xmlTransformationSettings.ExcludeFilesDependentUpon));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - ExcludeFilesDependentUponByFileName = '{0}'", xmlTransformationSettings.ExcludeFilesDependentUponByFileName));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - TransformMode = '{0}'", xmlTransformationSettings.TransformMode));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - TransformName = '{0}'", xmlTransformationSettings.TransformName));
+				log.Add(string.Format(CultureInfo.InvariantCulture, " - XmlFileExtensions = '{0}'", string.Join(", ", xmlTransformationSettings.XmlFileExtensions.ToArray())));
+				log.Add(" - XmlTransformationMaps:");
+				if(xmlTransformationSettings.XmlTransformationMaps.Any())
+				{
+					foreach(var xmlTransformationMap in xmlTransformationSettings.XmlTransformationMaps)
+					{
+						log.Add(string.Format(CultureInfo.InvariantCulture, "   - XmlTransformationMap = '{0}'", xmlTransformationMap));
+						log.Add(string.Format(CultureInfo.InvariantCulture, "     - {0} = '{1}'", XmlTransformationMap.GeneralBuildTransformMetadataName, xmlTransformationMap.GetMetadata(XmlTransformationMap.GeneralBuildTransformMetadataName)));
+						log.Add(string.Format(CultureInfo.InvariantCulture, "     - {0} = '{1}'", XmlTransformationMap.GeneralPublishTransformMetadataName, xmlTransformationMap.GetMetadata(XmlTransformationMap.GeneralPublishTransformMetadataName)));
+						log.Add(string.Format(CultureInfo.InvariantCulture, "     - {0} = '{1}'", XmlTransformationMap.SourceMetadataName, xmlTransformationMap.GetMetadata(XmlTransformationMap.SourceMetadataName)));
+					}
+				}
+				else
+				{
+					log.Add("   - NONE");
+				}
+			}
+			log.Add(string.Empty);
+			const string files = "Incoming xml-files";
+			log.Add(files);
+			log.Add(this.GetUnderliningForText('-', files));
+			var xmlFiles = xmlFileFilter.GetXmlFiles(this.Files).ToArray();
+			if(xmlFiles.Any())
+				log.AddRange(xmlFiles.Select(xmlFile => string.Format(CultureInfo.InvariantCulture, " - '{0}'", xmlFile)));
+			else
+				log.Add(" - NONE");
+
+			log.Add(string.Empty);
+			const string filesToTransform = "Files to transform";
+			log.Add(filesToTransform);
+			log.Add(this.GetUnderliningForText('-', filesToTransform));
+			if(this.FilesToTransform.Any())
+			{
+				foreach(var fileToTransform in this.FilesToTransform)
+				{
+					log.Add(string.Format(CultureInfo.InvariantCulture, " - '{0}'", fileToTransform));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.DestinationMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.DestinationMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.IsAppConfigMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.IsAppConfigMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.ObjectiveMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.ObjectiveMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.TransformMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformMetadataName)));
+				}
+			}
+			else
+			{
+				log.Add(" - NONE");
+			}
+			log.Add(string.Empty);
+
+			this.Log.LogMessageFromText(string.Join(Environment.NewLine, log.ToArray()), this.LogImportanceInternal);
 		}
 
 		protected internal virtual void LogValidationMessage(ValidationMessage validationMessage)
