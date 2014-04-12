@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -8,9 +7,18 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers
 {
 	public static class XmlFileExtensionHelper
 	{
+		#region Fields
+
 		private static readonly IEnumerable<string> _defaultXmlFileExtensions = new[] {".config", ".resx", ".xml"};
 
+		#endregion
+
 		#region Methods
+
+		public static IEnumerable<ITaskItem> CreateDefaultXmlFileExtensions()
+		{
+			return CreateXmlFileExtensions(_defaultXmlFileExtensions);
+		}
 
 		public static IEnumerable<ITaskItem> CreateXmlFileExtensions(IEnumerable<string> extensions)
 		{
@@ -29,13 +37,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers
 
 			return xmlFileExtensions.ToArray();
 		}
-
-		public static IEnumerable<ITaskItem> CreateDefaultXmlFileExtensions()
-		{
-			return CreateXmlFileExtensions(_defaultXmlFileExtensions);
-		}
-
-		
 
 		#endregion
 	}

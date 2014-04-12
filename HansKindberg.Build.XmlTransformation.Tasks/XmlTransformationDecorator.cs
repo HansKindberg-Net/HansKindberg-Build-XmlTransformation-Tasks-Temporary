@@ -522,10 +522,10 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		protected internal virtual void Log(IValidationResult validationResult)
 		{
-			if (validationResult == null)
+			if(validationResult == null)
 				throw new ArgumentNullException("validationResult");
-			
-			foreach (var exception in validationResult.Exceptions)
+
+			foreach(var exception in validationResult.Exceptions)
 			{
 				this.ValidationLog.LogWarning(exception.Message);
 			}

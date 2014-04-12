@@ -12,7 +12,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 	[TestClass]
 	public class CollectPublishTransformationTest
 	{
+		#region Fields
+
 		private static readonly string _source = Path.Combine(Project.SolutionDirectory, @"packages\SomePackage\Configuration\Web.Template.config");
+
+		#endregion
 
 		#region Methods
 
@@ -44,7 +48,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 				DestinationDirectory = Project.XmlTransformationPublishIntermediateLocation,
 				Files = CreateProblemFiles().ToArray(),
 				TransformName = "Production",
-				XmlFileExtensions = XmlFileExtensionHelper.CreateXmlFileExtensions(new[] { ".config", ".xml" }).ToArray(),
+				XmlFileExtensions = XmlFileExtensionHelper.CreateXmlFileExtensions(new[] {".config", ".xml"}).ToArray(),
 				XmlTransformationMaps = xmlTransformationMaps.ToArray()
 			};
 

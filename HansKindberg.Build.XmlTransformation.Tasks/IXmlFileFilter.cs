@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
 	public interface IXmlFileFilter
 	{
+		#region Methods
+
 		IEnumerable<ITaskItem> GetXmlFiles(IEnumerable<ITaskItem> files);
+
+		#endregion
 	}
 }

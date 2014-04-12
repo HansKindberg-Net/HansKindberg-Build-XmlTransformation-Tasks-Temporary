@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
-using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers;
 using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Fakes;
+using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers;
 using Microsoft.Build.Framework;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,7 +12,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 	[TestClass]
 	public class CollectBuildTransformationTest
 	{
+		#region Fields
+
 		private static readonly string _source = Path.Combine(Project.SolutionDirectory, @"packages\SomePackage\Configuration\Web.Template.config");
+
+		#endregion
 
 		#region Methods
 
@@ -27,9 +31,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 			var collectBuildTransformation = new CollectBuildTransformation
 			{
 				DestinationDirectory = Project.XmlTransformationBuildIntermediateLocation,
-				Files = FileHelper.CreateFiles(new[] { "Web.config" }).ToArray(),
+				Files = FileHelper.CreateFiles(new[] {"Web.config"}).ToArray(),
 				TransformName = "Debug",
-				XmlFileExtensions = XmlFileExtensionHelper.CreateXmlFileExtensions(new[] { ".config", ".xml" }).ToArray(),
+				XmlFileExtensions = XmlFileExtensionHelper.CreateXmlFileExtensions(new[] {".config", ".xml"}).ToArray(),
 				XmlTransformationMaps = xmlTransformationMaps.ToArray()
 			};
 

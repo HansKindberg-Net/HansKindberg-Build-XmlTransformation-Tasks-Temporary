@@ -43,7 +43,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			if(serviceType == null)
 				throw new ArgumentNullException("serviceType");
 
-			if (serviceType == typeof(IEqualityComparer<ITaskItem>))
+			if(serviceType == typeof(IEqualityComparer<ITaskItem>))
 				return this.TaskItemComparer;
 
 			if(serviceType == typeof(IFileSystem))
