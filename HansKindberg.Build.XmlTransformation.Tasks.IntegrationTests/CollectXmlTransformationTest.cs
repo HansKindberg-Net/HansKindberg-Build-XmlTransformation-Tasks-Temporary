@@ -49,7 +49,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 
 			collectXmlTransformation.BuildEngine = buildEngine;
 
-			string expectedLogMessage = string.Format(CultureInfo.InvariantCulture, "The source \"{0}\" for file \"{1}\" does not exist. See the \"XmlTransformationMap\"-itemgroup with identity \"{1}\".", invalidSource, file);
+			string expectedLogMessage = string.Format(CultureInfo.InvariantCulture, "The file \"{0}\" will not be transformed: 1. The source \"{1}\" for file \"{0}\" does not exist. See the \"XmlTransformationMap\"-itemgroup with identity \"{0}\".", file, invalidSource);
 
 			Assert.IsTrue(collectXmlTransformation.Execute());
 
