@@ -58,7 +58,7 @@
 			Command='$(SolutionDir).nuget\NuGet.exe install $(MSBuildProjectName) -ExcludeVersion -NoCache -OutputDirectory $(NuGetPackagesDirectory) -Prerelease -Source $(TargetDir) -Verbosity "$(NuGetVerbosity)"'
 		/>
 		<Copy
-			SourceFiles="$(SolutionDir)packages\System.IO.Abstractions.1.4.0.84\lib\net35\System.IO.Abstractions.dll"
+			SourceFiles="$(SolutionDir)packages\System.IO.Abstractions.1.4.0.84\lib\net35\System.IO.Abstractions.dll;$(SolutionDir)packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll"
 			DestinationFolder="$(SolutionDir)packages\HansKindberg.Build.XmlTransformation.Tasks\lib\net40"
 		/>
 	</Target>

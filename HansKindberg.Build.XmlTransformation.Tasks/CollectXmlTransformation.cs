@@ -216,9 +216,11 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 				{
 					log.Add(string.Format(CultureInfo.InvariantCulture, " - '{0}'", fileToTransform));
 					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.DestinationMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.DestinationMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.FirstTransformMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.FirstTransformMetadataName)));
 					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.IsAppConfigMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.IsAppConfigMetadataName)));
 					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.ObjectiveMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.ObjectiveMetadataName)));
-					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.TransformMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.TransformsMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformsMetadataName)));
+					log.Add(string.Format(CultureInfo.InvariantCulture, "   - {0} = '{1}'", XmlTransformationDecoratedTaskItemExtension.TransformsExceptFirstMetadataName, fileToTransform.GetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformsExceptFirstMetadataName)));
 				}
 			}
 			else

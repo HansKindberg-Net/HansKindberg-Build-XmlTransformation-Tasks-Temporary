@@ -11,11 +11,10 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 
 		public const string DestinationMetadataName = "Destination";
 		public const string FirstTransformMetadataName = "FirstTransform";
-		public const string GeneralTransformMetadataName = "GeneralTransform";
 		public const string IsAppConfigMetadataName = "IsAppConfig";
-		public const string LastTransformMetadataName = "LastTransform";
 		public const string ObjectiveMetadataName = "Objective";
-		public const string TransformMetadataName = "Transform";
+		public const string TransformsExceptFirstMetadataName = "TransformsExceptFirst";
+		public const string TransformsMetadataName = "Transforms";
 
 		#endregion
 
@@ -39,16 +38,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 		public static void FirstTransform(this ITaskItem taskItem, string value)
 		{
 			taskItem.SetString(FirstTransformMetadataName, value);
-		}
-
-		public static string GeneralTransform(this ITaskItem taskItem)
-		{
-			return taskItem.GetString(GeneralTransformMetadataName);
-		}
-
-		public static void GeneralTransform(this ITaskItem taskItem, string value)
-		{
-			taskItem.SetString(GeneralTransformMetadataName, value);
 		}
 
 		private static bool? GetNullableBoolean(this ITaskItem taskItem, string metadataName)
@@ -94,16 +83,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 			return isAppConfig.Value;
 		}
 
-		public static string LastTransform(this ITaskItem taskItem)
-		{
-			return taskItem.GetString(LastTransformMetadataName);
-		}
-
-		public static void LastTransform(this ITaskItem taskItem, string value)
-		{
-			taskItem.SetString(LastTransformMetadataName, value);
-		}
-
 		public static ITaskItem Objective(this ITaskItem taskItem)
 		{
 			var objective = taskItem.GetString(ObjectiveMetadataName);
@@ -144,14 +123,24 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 				taskItem.SetMetadata(metadataName, value);
 		}
 
-		public static string Transform(this ITaskItem taskItem)
+		public static string Transforms(this ITaskItem taskItem)
 		{
-			return taskItem.GetString(TransformMetadataName);
+			return taskItem.GetString(TransformsMetadataName);
 		}
 
-		public static void Transform(this ITaskItem taskItem, string value)
+		public static void Transforms(this ITaskItem taskItem, string value)
 		{
-			taskItem.SetString(TransformMetadataName, value);
+			taskItem.SetString(TransformsMetadataName, value);
+		}
+
+		public static string TransformsExceptFirst(this ITaskItem taskItem)
+		{
+			return taskItem.GetString(TransformsExceptFirstMetadataName);
+		}
+
+		public static void TransformsExceptFirst(this ITaskItem taskItem, string value)
+		{
+			taskItem.SetString(TransformsExceptFirstMetadataName, value);
 		}
 
 		#endregion

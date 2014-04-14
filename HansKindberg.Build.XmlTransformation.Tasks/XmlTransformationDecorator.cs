@@ -182,24 +182,24 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 							file.Destination(validatedDestination.Value);
 							file.FirstTransform(string.Empty);
-							file.GeneralTransform(string.Empty);
-							file.LastTransform(string.Empty);
-							file.Transform(string.Empty);
+							file.Transforms(string.Empty);
+							file.TransformsExceptFirst(string.Empty);
+
+							var transforms = new List<string>();
 
 							if(validatedGeneralTransform.IsValid && !string.IsNullOrEmpty(validatedGeneralTransform.Value))
-								file.GeneralTransform(validatedGeneralTransform.Value);
+								transforms.Add(validatedGeneralTransform.Value);
 
 							if(validatedTransform.IsValid)
-								file.Transform(validatedTransform.Value);
+								transforms.Add(validatedTransform.Value);
 
-							if(!string.IsNullOrEmpty(file.GeneralTransform()) && !string.IsNullOrEmpty(file.Transform()))
+							if(transforms.Any())
 							{
-								file.FirstTransform(file.GeneralTransform());
-								file.LastTransform(file.Transform());
-							}
-							else
-							{
-								file.FirstTransform(!string.IsNullOrEmpty(file.GeneralTransform()) ? file.GeneralTransform() : file.Transform());
+								file.FirstTransform(transforms.First());
+								file.Transforms(string.Join(";", transforms));
+
+								transforms.RemoveAt(0);
+								file.TransformsExceptFirst(string.Join(";", transforms));
 							}
 
 							decoratedFiles.Add(file);

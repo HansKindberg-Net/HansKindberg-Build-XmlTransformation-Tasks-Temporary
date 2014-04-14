@@ -74,9 +74,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 			Assert.IsFalse(fileToTransform.IsAppConfig());
 			// ReSharper restore PossibleInvalidOperationException
 			Assert.AreEqual("Web.Publish.config", fileToTransform.FirstTransform());
-			Assert.AreEqual("Web.Publish.config", fileToTransform.GeneralTransform());
-			Assert.AreEqual("Web.Production.config", fileToTransform.LastTransform());
-			Assert.AreEqual("Web.Production.config", fileToTransform.Transform());
+			Assert.AreEqual("Web.Publish.config;Web.Production.config", fileToTransform.Transforms());
+			Assert.AreEqual("Web.Production.config", fileToTransform.TransformsExceptFirst());
 		}
 
 		#endregion

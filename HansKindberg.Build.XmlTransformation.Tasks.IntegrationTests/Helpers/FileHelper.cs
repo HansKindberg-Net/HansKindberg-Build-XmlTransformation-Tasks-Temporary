@@ -18,7 +18,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers
 			return new TaskItem(identity);
 		}
 
-		public static ITaskItem CreateFile(string identity, string destination, bool? isAppConfig, string objective, string transform)
+		public static ITaskItem CreateFile(string identity, string destination, bool? isAppConfig, string objective, string transforms)
 		{
 			var file = CreateFile(identity);
 
@@ -31,8 +31,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers
 			if(objective != null)
 				file.SetMetadata(XmlTransformationDecoratedTaskItemExtension.ObjectiveMetadataName, objective);
 
-			if(transform != null)
-				file.SetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformMetadataName, transform);
+			if(transforms != null)
+				file.SetMetadata(XmlTransformationDecoratedTaskItemExtension.TransformsMetadataName, transforms);
 
 			return file;
 		}

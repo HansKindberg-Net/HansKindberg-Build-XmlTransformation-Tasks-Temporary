@@ -133,7 +133,7 @@
 		/>
 		<Message
 			Importance="high"
-			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - FirstTransform = '%(FileToTransform.FirstTransform)'%0a   - GeneralTransform = '%(FileToTransform.GeneralTransform)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - LastTransform = '%(FileToTransform.LastTransform)'%0a   - Objective = '%(FileToTransform.Objective)'%0a   - Transform = '%(FileToTransform.Transform)'"
+			Text=" - '%(FileToTransform.Identity)'%0a   - Destination = '%(FileToTransform.Destination)'%0a   - FirstTransform = '%(FileToTransform.FirstTransform)'%0a   - IsAppConfig = '%(FileToTransform.IsAppConfig)'%0a   - Objective = '%(FileToTransform.Objective)'%0a   - Transforms = '%(FileToTransform.Transforms)'%0a   - TransformsExceptFirst = '%(FileToTransform.TransformsExceptFirst)'"
 		/>
 	</Target>
 	<Target Name="CheckIfProjectFilesExists">
