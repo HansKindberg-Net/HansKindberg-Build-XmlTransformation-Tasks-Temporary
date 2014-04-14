@@ -9,6 +9,7 @@
 		<Recognized>
 			<Word>kindberg</Word>
 			<Word>validatable</Word>
+			<Word>xdt</Word><!-- XDT (XML Document Transform) -->
 		</Recognized>
 	</Words>
 </Dictionary>

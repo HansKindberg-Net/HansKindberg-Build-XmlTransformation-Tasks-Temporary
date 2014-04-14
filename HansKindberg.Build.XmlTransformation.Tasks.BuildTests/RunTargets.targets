@@ -7,7 +7,7 @@
 		<XmlTransformationSourceName Condition="$(XmlTransformationSourceName) == ''">Template</XmlTransformationSourceName>
 	</PropertyGroup>
 	<PropertyGroup>
-		<HansKindbergBuildXmlTransformationTasksLibrary Condition="$(HansKindbergBuildXmlTransformationTasksLibrary) == ''">$(NuGetPackagesDirectory)HansKindberg.Build.XmlTransformation.Tasks\lib\net35\HansKindberg.Build.XmlTransformation.Tasks.dll</HansKindbergBuildXmlTransformationTasksLibrary>
+		<HansKindbergBuildXmlTransformationTasksLibrary Condition="$(HansKindbergBuildXmlTransformationTasksLibrary) == ''">$(NuGetPackagesDirectory)HansKindberg.Build.XmlTransformation.Tasks\lib\net40\HansKindberg.Build.XmlTransformation.Tasks.dll</HansKindbergBuildXmlTransformationTasksLibrary>
 	</PropertyGroup>
 	<ItemGroup Condition="@(XmlFileExtension) == ''">
 		<!-- Case-insensitive -->

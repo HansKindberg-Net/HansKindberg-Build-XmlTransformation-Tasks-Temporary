@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using HansKindberg.Build.XmlTransformation.Tasks.Framework;
+using HansKindberg.Build.XmlTransformation.Tasks.Xdt;
+using HansKindberg.Build.XmlTransformation.Tasks.Xdt.Extensions;
 using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
@@ -13,7 +15,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 
 		private readonly IFileSystem _fileSystem = new FileSystem();
 		private readonly IEqualityComparer<ITaskItem> _taskItemComparer = new TaskItemComparer();
+		private readonly IXmlTransformableDocumentExtension _xmlTransformableDocumentExtension = new DefaultIXmlTransformableDocumentExtension();
 		private IXmlTransformationDecoratorFactory _xmlTransformationDecoratorFactory;
+		private readonly IXmlTransformationFactory _xmlTransformationFactory = new XmlTransformationFactory();
 
 		#endregion
 
@@ -29,9 +33,19 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._taskItemComparer; }
 		}
 
+		protected internal virtual IXmlTransformableDocumentExtension XmlTransformableDocumentExtension
+		{
+			get { return this._xmlTransformableDocumentExtension; }
+		}
+
 		protected internal virtual IXmlTransformationDecoratorFactory XmlTransformationDecoratorFactory
 		{
 			get { return this._xmlTransformationDecoratorFactory ?? (this._xmlTransformationDecoratorFactory = new XmlTransformationDecoratorFactory(this.FileSystem, this.TaskItemComparer)); }
+		}
+
+		protected internal virtual IXmlTransformationFactory XmlTransformationFactory
+		{
+			get { return this._xmlTransformationFactory; }
 		}
 
 		#endregion
@@ -49,8 +63,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			if(serviceType == typeof(IFileSystem))
 				return this.FileSystem;
 
+			if(serviceType == typeof(IXmlTransformableDocumentExtension))
+				return this.XmlTransformableDocumentExtension;
+
 			if(serviceType == typeof(IXmlTransformationDecoratorFactory))
 				return this.XmlTransformationDecoratorFactory;
+
+			if(serviceType == typeof(IXmlTransformationFactory))
+				return this.XmlTransformationFactory;
 
 			return Activator.CreateInstance(serviceType);
 		}

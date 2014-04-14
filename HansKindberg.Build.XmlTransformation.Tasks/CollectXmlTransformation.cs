@@ -7,7 +7,6 @@ using System.Linq;
 using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -18,10 +17,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 		private readonly IFileSystem _fileSystem;
 		private ITaskItem[] _files;
 		private ITaskItem[] _filesToTransform;
-		private MessageImportance _logImportance = MessageImportance.Normal;
 		private string _transformName;
-		private readonly IValidationLog _validationLog = new ValidationLog();
-		private ValidationMode _validationMode = Validation.ValidationMode.Warning;
 		private ITaskItem[] _xmlFileExtensions;
 		private readonly IXmlTransformationDecoratorFactory _xmlTransformationDecoratorFactory;
 		private ITaskItem[] _xmlTransformationMaps;
@@ -70,17 +66,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			protected internal set { this._filesToTransform = value; }
 		}
 
-		public virtual string LogImportance
-		{
-			get { return this.LogImportanceInternal.ToString(); }
-			set { this.LogImportanceInternal = (MessageImportance) Enum.Parse(typeof(MessageImportance), value, true); }
-		}
 
-		protected internal virtual MessageImportance LogImportanceInternal
-		{
-			get { return this._logImportance; }
-			set { this._logImportance = value; }
-		}
+
 
 		protected internal abstract TransformMode TransformMode { get; }
 
@@ -91,22 +78,9 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			set { this._transformName = value; }
 		}
 
-		protected internal virtual IValidationLog ValidationLog
-		{
-			get { return this._validationLog; }
-		}
+		
 
-		public virtual string ValidationMode
-		{
-			get { return this.ValidationModeInternal.ToString(); }
-			set { this.ValidationModeInternal = (ValidationMode) Enum.Parse(typeof(ValidationMode), value, true); }
-		}
-
-		protected internal virtual ValidationMode ValidationModeInternal
-		{
-			get { return this._validationMode; }
-			set { this._validationMode = value; }
-		}
+		
 
 		[Required]
 		public virtual ITaskItem[] XmlFileExtensions
@@ -162,19 +136,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 				this.FilesToTransform = xmlTransformationDecorator.GetDecoratedFiles(this.Files).ToArray();
 
-				this.TransferValidationLog();
-
 				this.LogInformation(xmlTransformationSettings, xmlTransformationDecorator);
 			}
 			catch(Exception exception)
 			{
-				this.Log.LogError(exception.ToString());
-				return false;
+				this.ValidationLog.LogError(exception.ToString());
 			}
 
-			var thereAreValidationErrors = this.ValidationLog.ValidationMessages.All(validationMessage => !(validationMessage is ValidationError));
-
-			return !(thereAreValidationErrors && this.ValidationModeInternal == Validation.ValidationMode.Error);
+			return this.TransferValidationLog();
 		}
 
 		protected internal virtual string GetUnderliningForText(char underliningCharacter, string text)
@@ -269,39 +238,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			this.Log.LogMessageFromText(string.Join(Environment.NewLine, log.ToArray()), this.LogImportanceInternal);
 		}
 
-		protected internal virtual void LogValidationMessage(ValidationMessage validationMessage)
-		{
-			if(validationMessage == null)
-				throw new ArgumentNullException("validationMessage");
-
-			if(this.ValidationModeInternal == Validation.ValidationMode.Message)
-			{
-				this.Log.LogMessage(validationMessage.Information);
-				return;
-			}
-
-			if(this.ValidationModeInternal == Validation.ValidationMode.Warning)
-			{
-				this.Log.LogWarning(validationMessage.Information);
-				return;
-			}
-
-			if(validationMessage is ValidationError)
-			{
-				this.Log.LogError(validationMessage.Information);
-				return;
-			}
-
-			this.Log.LogWarning(validationMessage.Information);
-		}
-
-		protected internal virtual void TransferValidationLog()
-		{
-			foreach(var validationMessage in this.ValidationLog.ValidationMessages)
-			{
-				this.LogValidationMessage(validationMessage);
-			}
-		}
 
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		[SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])")]

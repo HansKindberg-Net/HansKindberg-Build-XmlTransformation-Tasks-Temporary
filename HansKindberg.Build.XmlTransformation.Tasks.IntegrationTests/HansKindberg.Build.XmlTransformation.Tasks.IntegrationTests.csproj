@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests</RootNamespace>
     <AssemblyName>HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -47,18 +47,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="Microsoft.Build.Utilities.v3.5" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Moq">
-      <HintPath>..\packages\Moq.4.2.1402.2112\lib\net35\Moq.dll</HintPath>
+      <HintPath>..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.IO.Abstractions, Version=1.4.0.83, Culture=neutral, PublicKeyToken=d480b5b72fb413da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.IO.Abstractions.1.4.0.83\lib\net35\System.IO.Abstractions.dll</HintPath>
+    <Reference Include="System.IO.Abstractions">
+      <HintPath>..\packages\System.IO.Abstractions.1.4.0.84\lib\net35\System.IO.Abstractions.dll</HintPath>
+      <Private>True</Private>
     </Reference>
+    <ProjectReference Include="..\HansKindberg.Build.XmlTransformation.Tasks\HansKindberg.Build.XmlTransformation.Tasks.csproj">
+      <Project>{a0de02a6-0312-4d39-82a0-c4dc66e91819}</Project>
+      <Name>HansKindberg.Build.XmlTransformation.Tasks</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -73,31 +78,33 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="..\CodeAnalysis\SolutionSuppressions.cs">
-      <Link>CodeAnalysis\SolutionSuppressions.cs</Link>
-    </Compile>
-    <Compile Include="..\Properties\Solution-AssemblyInfo.cs">
-      <Link>Properties\Solution-AssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
-    <Compile Include="CollectPublishTransformationTest.cs" />
-    <Compile Include="CollectBuildTransformationTest.cs" />
-    <Compile Include="CollectXmlTransformationTest.cs" />
-    <Compile Include="Helpers\FileHelper.cs" />
-    <Compile Include="Helpers\XmlFileExtensionHelper.cs" />
-    <Compile Include="Helpers\XmlTransformationMapHelper.cs" />
-    <Compile Include="Fakes\BuildEngineFake.cs" />
-    <Compile Include="Project.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="..\Signing\HansKindberg.snk">
-      <Link>HansKindberg.snk</Link>
-    </None>
     <CodeAnalysisDictionary Include="CodeAnalysis\AssemblyDictionary.xml" />
     <CodeAnalysisDictionary Include="..\CodeAnalysis\SolutionDictionary.xml">
       <Link>CodeAnalysis\SolutionDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Content Include="Web.config" />
+    <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
+    <Compile Include="..\CodeAnalysis\SolutionSuppressions.cs">
+      <Link>CodeAnalysis\SolutionSuppressions.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\Properties\Solution-AssemblyInfo.cs">
+      <Link>Properties\Solution-AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\XmlFileExtensionHelper.cs" />
+    <Compile Include="Helpers\XmlTransformationMapHelper.cs" />
+    <Compile Include="Fakes\BuildEngineFake.cs" />
+    <Compile Include="TransformXmlTest.cs" />
+    <None Include="..\Signing\HansKindberg.snk">
+      <Link>HansKindberg.snk</Link>
+    </None>
+    <Compile Include="CollectBuildTransformationTest.cs" />
+    <Compile Include="CollectPublishTransformationTest.cs" />
+    <Compile Include="CollectXmlTransformationTest.cs" />
+    <Compile Include="Project.cs" />
     <None Include="packages.config" />
+    <Content Include="Web.config" />
+    <None Include="TransformXml-Tests\Expected\Execute-ShouldWorkProperly.Web.config" />
     <None Include="Web.Build.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -122,12 +129,6 @@
       <DependentUpon>Web.Publish.config</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HansKindberg.Build.XmlTransformation.Tasks\HansKindberg.Build.XmlTransformation.Tasks.csproj">
-      <Project>{a0de02a6-0312-4d39-82a0-c4dc66e91819}</Project>
-      <Name>HansKindberg.Build.XmlTransformation.Tasks</Name>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

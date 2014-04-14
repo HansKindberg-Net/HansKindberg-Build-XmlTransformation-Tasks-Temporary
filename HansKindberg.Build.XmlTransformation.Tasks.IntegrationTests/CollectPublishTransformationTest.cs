@@ -36,7 +36,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 		}
 
 		[TestMethod]
-		public void Test()
+		public void Execute_ShouldWorkProperly()
 		{
 			var xmlTransformationMaps = new List<ITaskItem>
 			{

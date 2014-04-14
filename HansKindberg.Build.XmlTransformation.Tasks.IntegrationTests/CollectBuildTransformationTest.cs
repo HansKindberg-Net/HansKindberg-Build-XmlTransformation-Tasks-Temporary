@@ -21,7 +21,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 		#region Methods
 
 		[TestMethod]
-		public void Test()
+		public void Execute_ShouldWorkProperly()
 		{
 			var xmlTransformationMaps = new List<ITaskItem>
 			{

@@ -58,8 +58,8 @@
 			Command='$(SolutionDir).nuget\NuGet.exe install $(MSBuildProjectName) -ExcludeVersion -NoCache -OutputDirectory $(NuGetPackagesDirectory) -Prerelease -Source $(TargetDir) -Verbosity "$(NuGetVerbosity)"'
 		/>
 		<Copy
-			SourceFiles="$(SolutionDir)packages\System.IO.Abstractions.1.4.0.83\lib\net35\System.IO.Abstractions.dll"
-			DestinationFolder="$(SolutionDir)packages\HansKindberg.Build.XmlTransformation.Tasks\lib\net35"
+			SourceFiles="$(SolutionDir)packages\System.IO.Abstractions.1.4.0.84\lib\net35\System.IO.Abstractions.dll"
+			DestinationFolder="$(SolutionDir)packages\HansKindberg.Build.XmlTransformation.Tasks\lib\net40"
 		/>
 	</Target>
 </Project>
