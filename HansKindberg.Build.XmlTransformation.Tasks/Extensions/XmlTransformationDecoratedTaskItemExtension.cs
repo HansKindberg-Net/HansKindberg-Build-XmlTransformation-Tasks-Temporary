@@ -10,7 +10,10 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 		#region Fields
 
 		public const string DestinationMetadataName = "Destination";
+		public const string FirstTransformMetadataName = "FirstTransform";
+		public const string GeneralTransformMetadataName = "GeneralTransform";
 		public const string IsAppConfigMetadataName = "IsAppConfig";
+		public const string LastTransformMetadataName = "LastTransform";
 		public const string ObjectiveMetadataName = "Objective";
 		public const string TransformMetadataName = "Transform";
 
@@ -26,6 +29,26 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 		public static void Destination(this ITaskItem taskItem, string value)
 		{
 			taskItem.SetString(DestinationMetadataName, value);
+		}
+
+		public static string FirstTransform(this ITaskItem taskItem)
+		{
+			return taskItem.GetString(FirstTransformMetadataName);
+		}
+
+		public static void FirstTransform(this ITaskItem taskItem, string value)
+		{
+			taskItem.SetString(FirstTransformMetadataName, value);
+		}
+
+		public static string GeneralTransform(this ITaskItem taskItem)
+		{
+			return taskItem.GetString(GeneralTransformMetadataName);
+		}
+
+		public static void GeneralTransform(this ITaskItem taskItem, string value)
+		{
+			taskItem.SetString(GeneralTransformMetadataName, value);
 		}
 
 		private static bool? GetNullableBoolean(this ITaskItem taskItem, string metadataName)
@@ -69,6 +92,16 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.Extensions
 			}
 
 			return isAppConfig.Value;
+		}
+
+		public static string LastTransform(this ITaskItem taskItem)
+		{
+			return taskItem.GetString(LastTransformMetadataName);
+		}
+
+		public static void LastTransform(this ITaskItem taskItem, string value)
+		{
+			taskItem.SetString(LastTransformMetadataName, value);
 		}
 
 		public static ITaskItem Objective(this ITaskItem taskItem)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Fakes;
 using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers;
 using Microsoft.Build.Framework;
@@ -59,29 +60,23 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests
 
 			var filesToTransform = collectPublishTransformation.FilesToTransform;
 
-			Assert.AreEqual(2, filesToTransform.Count());
+			Assert.AreEqual(1, filesToTransform.Count());
 
 			var expectedDestination = Path.Combine(Project.XmlTransformationPublishIntermediateLocation, "Web.config");
 
-			var firstFileToTransform = filesToTransform.ElementAt(0);
+			var fileToTransform = filesToTransform.ElementAt(0);
 
-			var firstExpectedIdentity = Path.Combine(Project.XmlTransformationBuildIntermediateLocation, "Web.config");
+			var expectedIdentity = Path.Combine(Project.XmlTransformationBuildIntermediateLocation, "Web.config");
 
-			Assert.AreEqual(firstExpectedIdentity, firstFileToTransform.ItemSpec);
-			Assert.AreEqual(expectedDestination, firstFileToTransform.Destination());
+			Assert.AreEqual(expectedIdentity, fileToTransform.ItemSpec);
+			Assert.AreEqual(expectedDestination, fileToTransform.Destination());
 			// ReSharper disable PossibleInvalidOperationException
-			Assert.IsFalse(firstFileToTransform.IsAppConfig());
+			Assert.IsFalse(fileToTransform.IsAppConfig());
 			// ReSharper restore PossibleInvalidOperationException
-			Assert.AreEqual("Web.Publish.config", firstFileToTransform.Transform());
-
-			var secondFileToTransform = filesToTransform.ElementAt(1);
-
-			Assert.AreEqual(expectedDestination, secondFileToTransform.ItemSpec);
-			Assert.AreEqual(expectedDestination, secondFileToTransform.Destination());
-			// ReSharper disable PossibleInvalidOperationException
-			Assert.IsFalse(secondFileToTransform.IsAppConfig());
-			// ReSharper restore PossibleInvalidOperationException
-			Assert.AreEqual("Web.Production.config", secondFileToTransform.Transform());
+			Assert.AreEqual("Web.Publish.config", fileToTransform.FirstTransform());
+			Assert.AreEqual("Web.Publish.config", fileToTransform.GeneralTransform());
+			Assert.AreEqual("Web.Production.config", fileToTransform.LastTransform());
+			Assert.AreEqual("Web.Production.config", fileToTransform.Transform());
 		}
 
 		#endregion

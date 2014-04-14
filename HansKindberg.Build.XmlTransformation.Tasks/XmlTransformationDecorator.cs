@@ -9,7 +9,6 @@ using HansKindberg.Build.Framework.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
@@ -181,49 +180,29 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 							if(!source.Equals(file.ItemSpec))
 								file.ItemSpec = source;
 
-							var generalTransformIsValid = validatedGeneralTransform.IsValid && !string.IsNullOrEmpty(validatedGeneralTransform.Value);
+							file.Destination(validatedDestination.Value);
+							file.FirstTransform(string.Empty);
+							file.GeneralTransform(string.Empty);
+							file.LastTransform(string.Empty);
+							file.Transform(string.Empty);
 
-							if(generalTransformIsValid)
-							{
-								var generalTransformFile = !validatedTransform.IsValid ? file : new TaskItem(file);
-
-								generalTransformFile.Destination(validatedDestination.Value);
-								generalTransformFile.Transform(validatedGeneralTransform.Value);
-
-								decoratedFiles.Add(generalTransformFile);
-
-								if(validatedTransform.IsValid)
-								{
-									file.ItemSpec = validatedDestination.Value;
-
-									if(!this.FileSystem.File.Exists(file.ItemSpec))
-									{
-										var objective = file.Objective();
-
-										var validatedObjectiveSource = this.GetValidatedSource(objective);
-
-										var objectiveSource = validatedObjectiveSource.Value;
-
-										if(string.IsNullOrEmpty(objectiveSource))
-											objectiveSource = objective.ItemSpec;
-
-										var directory = this.FileSystem.FileInfo.FromFileName(file.ItemSpec).Directory;
-
-										if(!directory.Exists)
-											directory.Create();
-
-										this.FileSystem.File.Copy(objectiveSource, file.ItemSpec);
-									}
-								}
-							}
+							if(validatedGeneralTransform.IsValid && !string.IsNullOrEmpty(validatedGeneralTransform.Value))
+								file.GeneralTransform(validatedGeneralTransform.Value);
 
 							if(validatedTransform.IsValid)
-							{
-								file.Destination(validatedDestination.Value);
 								file.Transform(validatedTransform.Value);
 
-								decoratedFiles.Add(file);
+							if(!string.IsNullOrEmpty(file.GeneralTransform()) && !string.IsNullOrEmpty(file.Transform()))
+							{
+								file.FirstTransform(file.GeneralTransform());
+								file.LastTransform(file.Transform());
 							}
+							else
+							{
+								file.FirstTransform(!string.IsNullOrEmpty(file.GeneralTransform()) ? file.GeneralTransform() : file.Transform());
+							}
+
+							decoratedFiles.Add(file);
 						}
 					}
 				}
