@@ -1,8 +1,10 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Web.XmlTransform;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt.Extensions
 {
+	[CLSCompliant(false)]
 	public interface IXmlTransformableDocumentExtension
 	{
 		#region Methods

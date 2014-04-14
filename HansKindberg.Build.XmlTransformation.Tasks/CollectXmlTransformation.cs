@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
-using HansKindberg.Build.XmlTransformation.Tasks.Validation;
 using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
@@ -66,9 +65,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			protected internal set { this._filesToTransform = value; }
 		}
 
-
-
-
 		protected internal abstract TransformMode TransformMode { get; }
 
 		[Required]
@@ -77,10 +73,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			get { return this._transformName ?? (this._transformName = string.Empty); }
 			set { this._transformName = value; }
 		}
-
-		
-
-		
 
 		[Required]
 		public virtual ITaskItem[] XmlFileExtensions
@@ -237,7 +229,6 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 			this.Log.LogMessageFromText(string.Join(Environment.NewLine, log.ToArray()), this.LogImportanceInternal);
 		}
-
 
 		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		[SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])")]

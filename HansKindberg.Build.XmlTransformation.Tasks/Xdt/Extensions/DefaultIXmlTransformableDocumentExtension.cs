@@ -4,6 +4,7 @@ using Microsoft.Web.XmlTransform;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt.Extensions
 {
+	[CLSCompliant(false)]
 	public class DefaultIXmlTransformableDocumentExtension : IXmlTransformableDocumentExtension
 	{
 		#region Methods

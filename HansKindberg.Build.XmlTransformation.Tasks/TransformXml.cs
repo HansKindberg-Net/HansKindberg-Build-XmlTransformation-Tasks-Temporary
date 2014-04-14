@@ -9,6 +9,7 @@ using Microsoft.Build.Framework;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks
 {
+	[CLSCompliant(false)]
 	public class TransformXml : Task
 	{
 		#region Fields

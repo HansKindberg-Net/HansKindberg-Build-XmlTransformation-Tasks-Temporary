@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HansKindberg.Build.XmlTransformation.Tasks.Extensions;
 using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Fakes;
 using HansKindberg.Build.XmlTransformation.Tasks.IntegrationTests.Helpers;
 using Microsoft.Build.Framework;

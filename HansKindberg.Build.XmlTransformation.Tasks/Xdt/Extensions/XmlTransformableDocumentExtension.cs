@@ -5,6 +5,7 @@ using Microsoft.Web.XmlTransform;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt.Extensions
 {
+	[CLSCompliant(false)]
 	public static class XmlTransformableDocumentExtension
 	{
 		#region Fields

@@ -4,6 +4,7 @@ using HansKindberg.Build.XmlTransformation.Tasks.Xdt.Extensions;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt
 {
+	[CLSCompliant(false)]
 	[SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification = "This is a wrapper.")]
 	public class XmlTransformationWrapper : IXmlTransformation
 	{

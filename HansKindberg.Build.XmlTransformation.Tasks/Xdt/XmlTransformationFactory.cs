@@ -1,8 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Web.XmlTransform;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt
 {
+	[CLSCompliant(false)]
 	public class XmlTransformationFactory : IXmlTransformationFactory
 	{
 		#region Methods

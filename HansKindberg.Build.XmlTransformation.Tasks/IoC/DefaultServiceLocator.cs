@@ -33,6 +33,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._taskItemComparer; }
 		}
 
+		[CLSCompliant(false)]
 		protected internal virtual IXmlTransformableDocumentExtension XmlTransformableDocumentExtension
 		{
 			get { return this._xmlTransformableDocumentExtension; }
@@ -43,6 +44,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks.IoC
 			get { return this._xmlTransformationDecoratorFactory ?? (this._xmlTransformationDecoratorFactory = new XmlTransformationDecoratorFactory(this.FileSystem, this.TaskItemComparer)); }
 		}
 
+		[CLSCompliant(false)]
 		protected internal virtual IXmlTransformationFactory XmlTransformationFactory
 		{
 			get { return this._xmlTransformationFactory; }

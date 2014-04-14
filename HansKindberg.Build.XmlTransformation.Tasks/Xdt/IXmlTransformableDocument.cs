@@ -1,10 +1,13 @@
 ﻿using System;
-using Microsoft.Web.XmlTransform;
 
 namespace HansKindberg.Build.XmlTransformation.Tasks.Xdt
 {
 	public interface IXmlTransformableDocument : IDisposable
 	{
+		#region Methods
+
 		void Save(string fileName);
+
+		#endregion
 	}
 }
