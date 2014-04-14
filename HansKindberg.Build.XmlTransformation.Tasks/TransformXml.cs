@@ -77,7 +77,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 		#region Methods
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogMessage(Microsoft.Build.Framework.MessageImportance,System.String,System.Object[])")]
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		public override bool Execute()
 		{
 			try
@@ -96,10 +96,14 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 				for(int i = 0; i < this.Transforms.Count(); i++)
 				{
-					using(var xmlTransformableDocument = this.XmlTransformationFactory.CreateXmlTransformableDocument(i == 0 ? this.GetFullPathForSource() : this.Destination.ItemSpec))
+					var source = i == 0 ? this.Source.ItemSpec : this.Destination.ItemSpec;
+					var fullPathForSource = i == 0 ? this.GetFullPathForSource() : this.Destination.ItemSpec;
+
+					using(var xmlTransformableDocument = this.XmlTransformationFactory.CreateXmlTransformableDocument(fullPathForSource))
 					{
-						//Log.LogMessage(MessageImportance.Low, "Applying Transform File: {0}", transform);
-						using(var xmlTransformation = this.XmlTransformationFactory.CreateXmlTransformation(this.GetFullPathForTransform(this.Transforms[i])))
+						var fullPathForTransform = this.GetFullPathForTransform(this.Transforms[i]);
+
+						using(var xmlTransformation = this.XmlTransformationFactory.CreateXmlTransformation(fullPathForTransform))
 						{
 							xmlTransformation.Apply(xmlTransformableDocument);
 
@@ -109,6 +113,8 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 								destinationDirectory.Create();
 
 							xmlTransformableDocument.Save(this.Destination.ItemSpec);
+
+							this.Log.LogMessageFromText(string.Format(CultureInfo.InvariantCulture, "Transformed {0} using {1} into {2}.", source, fullPathForTransform, this.Destination), this.LogImportanceInternal);
 						}
 					}
 				}
@@ -132,7 +138,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			return file.ItemSpec;
 		}
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
 		protected internal virtual string GetFullPathForSource()
 		{
 			return this.GetFullPathForFile(this.SourceRootPath, this.Source);
@@ -143,7 +149,10 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 			return this.GetFullPathForFile(this.TransformRootPath, transform);
 		}
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TransformRootPath"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SourceRootPath"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes"), SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])")]
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+		[SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])")]
+		[SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TransformRootPath")]
+		[SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SourceRootPath")]
 		protected internal virtual bool Validate()
 		{
 			bool validate = true;
