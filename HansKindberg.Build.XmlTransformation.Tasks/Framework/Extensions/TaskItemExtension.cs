@@ -41,6 +41,14 @@ namespace HansKindberg.Build.Framework.Extensions // ReSharper restore CheckName
 			return taskItem.GetMetadata("FullPath");
 		}
 
+		public static string RelativeDirectory(this ITaskItem taskItem)
+		{
+			if(taskItem == null)
+				throw new ArgumentNullException("taskItem");
+
+			return taskItem.GetMetadata("RelativeDir");
+		}
+
 		#endregion
 	}
 }

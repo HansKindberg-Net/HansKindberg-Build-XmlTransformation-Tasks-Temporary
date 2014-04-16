@@ -60,6 +60,44 @@
 
 	<!-- When adding more files to the project, recopy this from the project file so it is included here otherwhise no files will exist. -->		
 	<ItemGroup>
+		<Content Include="Xml\Another-File.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Include="Xml\Another-File.Build.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.xml</DependentUpon>
+		</None>
+		<None Include="Xml\Another-File.Debug.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.Build.xml</DependentUpon>
+		</None>
+		<None Include="Xml\Another-File.Production.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.Publish.xml</DependentUpon>
+		</None>
+		<None Include="Xml\Another-File.Publish.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.xml</DependentUpon>
+		</None>
+		<None Include="Xml\Another-File.Release.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.Build.xml</DependentUpon>
+		</None>
+		<None Include="Xml\Another-File.Test.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>Another-File.Publish.xml</DependentUpon>
+		</None>
+		<Content Include="Xml\File.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Include="Xml\File.Debug.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>File.xml</DependentUpon>
+		</None>
+		<None Include="Xml\File.Release.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<DependentUpon>File.xml</DependentUpon>
+		</None>
 		<Content Include="App.config" />
 		<None Include="App.Build.config">
 			<DependentUpon>App.config</DependentUpon>

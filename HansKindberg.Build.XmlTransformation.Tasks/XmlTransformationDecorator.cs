@@ -392,7 +392,7 @@ namespace HansKindberg.Build.XmlTransformation.Tasks
 
 			var objective = file.Objective();
 
-			var transform = this.FileSystem.Path.GetFileNameWithoutExtension(objective.ItemSpec) + "." + (this.XmlTransformationSettings.TransformName ?? string.Empty) + objective.Extension();
+			var transform = objective.RelativeDirectory() + this.FileSystem.Path.GetFileNameWithoutExtension(objective.ItemSpec) + "." + (this.XmlTransformationSettings.TransformName ?? string.Empty) + objective.Extension();
 			validatedTransform.Value = transform;
 
 			if(!this.FileSystem.File.Exists(transform))
